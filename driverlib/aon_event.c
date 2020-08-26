@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       aon_event.c
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2017-06-05 12:13:49 +0200 (Mon, 05 Jun 2017)
+*  Revision:       49096
 *
 *  Description:    Driver for the AON Event fabric.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 *
 ******************************************************************************/
 
-#include <driverlib/aon_event.h>
+#include "aon_event.h"
 
 //*****************************************************************************
 //
@@ -61,7 +61,7 @@
 
 //*****************************************************************************
 //
-//! Select event source for the specified MCU wakeup programmable event
+// Select event source for the specified MCU wakeup programmable event
 //
 //*****************************************************************************
 void
@@ -69,9 +69,7 @@ AONEventMcuWakeUpSet(uint32_t ui32MCUWUEvent, uint32_t ui32EventSrc)
 {
     uint32_t ui32Ctrl;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32MCUWUEvent == AON_EVENT_MCU_WU0) ||
            (ui32MCUWUEvent == AON_EVENT_MCU_WU1) ||
            (ui32MCUWUEvent == AON_EVENT_MCU_WU2) ||
@@ -106,7 +104,7 @@ AONEventMcuWakeUpSet(uint32_t ui32MCUWUEvent, uint32_t ui32EventSrc)
 
 //*****************************************************************************
 //
-//! Get event source for the specified MCU wakeup programmable event
+// Get event source for the specified MCU wakeup programmable event
 //
 //*****************************************************************************
 uint32_t
@@ -114,9 +112,7 @@ AONEventMcuWakeUpGet(uint32_t ui32MCUWUEvent)
 {
     uint32_t ui32EventSrc;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32MCUWUEvent == AON_EVENT_MCU_WU0) ||
            (ui32MCUWUEvent == AON_EVENT_MCU_WU1) ||
            (ui32MCUWUEvent == AON_EVENT_MCU_WU2) ||
@@ -145,16 +141,14 @@ AONEventMcuWakeUpGet(uint32_t ui32MCUWUEvent)
                AON_EVENT_MCUWUSEL_WU3_EV_S);
     }
 
-    //
     // Should never get to this statement, but suppress warning.
-    //
     ASSERT(0);
     return(0);
 }
 
 //*****************************************************************************
 //
-//! Select event source for the specified AUX wakeup programmable event
+// Select event source for the specified AUX wakeup programmable event
 //
 //*****************************************************************************
 void
@@ -162,9 +156,7 @@ AONEventAuxWakeUpSet(uint32_t ui32AUXWUEvent, uint32_t ui32EventSrc)
 {
     uint32_t ui32Ctrl;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32AUXWUEvent == AON_EVENT_AUX_WU0) ||
            (ui32AUXWUEvent == AON_EVENT_AUX_WU1) ||
            (ui32AUXWUEvent == AON_EVENT_AUX_WU2));
@@ -193,7 +185,7 @@ AONEventAuxWakeUpSet(uint32_t ui32AUXWUEvent, uint32_t ui32EventSrc)
 
 //*****************************************************************************
 //
-//! Get event source for the specified AUX wakeup programmable event
+// Get event source for the specified AUX wakeup programmable event
 //
 //*****************************************************************************
 uint32_t
@@ -201,9 +193,7 @@ AONEventAuxWakeUpGet(uint32_t ui32AUXWUEvent)
 {
     uint32_t ui32EventSrc;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32AUXWUEvent == AON_EVENT_AUX_WU0) ||
            (ui32AUXWUEvent == AON_EVENT_AUX_WU1) ||
            (ui32AUXWUEvent == AON_EVENT_AUX_WU2));
@@ -226,17 +216,15 @@ AONEventAuxWakeUpGet(uint32_t ui32AUXWUEvent)
                AON_EVENT_AUXWUSEL_WU2_EV_S);
     }
 
-    //
     // Should never get to this statement, but suppress warning.
-    //
     ASSERT(0);
     return(0);
 }
 
 //*****************************************************************************
 //
-//! Select event source for the specified programmable event forwarded to the
-//! MCU event fabric
+// Select event source for the specified programmable event forwarded to the
+// MCU event fabric
 //
 //*****************************************************************************
 void
@@ -244,9 +232,7 @@ AONEventMcuSet(uint32_t ui32MCUEvent, uint32_t ui32EventSrc)
 {
     uint32_t ui32Ctrl;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32MCUEvent == AON_EVENT_MCU_EVENT0) ||
            (ui32MCUEvent == AON_EVENT_MCU_EVENT1) ||
            (ui32MCUEvent == AON_EVENT_MCU_EVENT2));
@@ -275,8 +261,8 @@ AONEventMcuSet(uint32_t ui32MCUEvent, uint32_t ui32EventSrc)
 
 //*****************************************************************************
 //
-//! Get source for the specified programmable event forwarded to the MCU event
-//! fabric.
+// Get source for the specified programmable event forwarded to the MCU event
+// fabric.
 //
 //*****************************************************************************
 uint32_t
@@ -284,9 +270,7 @@ AONEventMcuGet(uint32_t ui32MCUEvent)
 {
     uint32_t ui32EventSrc;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32MCUEvent == AON_EVENT_MCU_EVENT0) ||
            (ui32MCUEvent == AON_EVENT_MCU_EVENT1) ||
            (ui32MCUEvent == AON_EVENT_MCU_EVENT2));
@@ -309,9 +293,7 @@ AONEventMcuGet(uint32_t ui32MCUEvent)
                AON_EVENT_EVTOMCUSEL_AON_PROG2_EV_S);
     }
 
-    //
     // Should never get to this statement, but suppress warning.
-    //
     ASSERT(0);
     return(0);
 }

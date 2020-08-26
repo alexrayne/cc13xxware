@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       aux_timer.h
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2017-06-05 12:13:49 +0200 (Mon, 05 Jun 2017)
+*  Revision:       49096
 *
 *  Description:    Defines and prototypes for the AUX Timer
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -61,12 +61,12 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_types.h>
-#include <inc/hw_ints.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_aux_timer.h>
-#include <driverlib/debug.h>
-#include <driverlib/interrupt.h>
+#include "../inc/hw_types.h"
+#include "../inc/hw_ints.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_aux_timer.h"
+#include "debug.h"
+#include "interrupt.h"
 
 //*****************************************************************************
 //
@@ -92,8 +92,6 @@ extern "C"
 //*****************************************************************************
 //
 // Values that can be passed to AUXTimerConfigure().
-//
-// Requires timer0 and timer1 to use same enumerations and values!
 //
 //*****************************************************************************
 #define AUX_TIMER_CFG_ONE_SHOT              (AUX_TIMER_T0CFG_RELOAD_MAN)        // One-shot timer mode
@@ -236,8 +234,9 @@ extern "C"
 //!
 //! The mode, event polarity and event source are configured by setting the
 //! \c ui32Config parameter as the bitwise OR of the various settings.
-//! I.e. (\ref AUX_TIMER_CFG_ONE_SHOT_EDGE_COUNT | \ref AUX_TIMER_CFG_RISING_EDGE |
-//!       \ref AUX_TIMER_CFG_TICK_SRC_RTC_EVENT).
+//! Example: (\ref AUX_TIMER_CFG_ONE_SHOT_EDGE_COUNT |
+//!           \ref AUX_TIMER_CFG_RISING_EDGE |
+//!           \ref AUX_TIMER_CFG_TICK_SRC_RTC_EVENT).
 //!
 //! \note When used as an edge counter the prescaler should be set to
 //! \ref AUX_TIMER_PRESCALE_DIV_1.
@@ -249,6 +248,7 @@ extern "C"
 //! \param ui32Timer is the timer to configure.
 //! - \ref AUX_TIMER_0
 //! - \ref AUX_TIMER_1
+//! - \ref AUX_TIMER_BOTH
 //! \param ui32Config is the timer configuration.
 //!
 //! \return None
@@ -320,9 +320,7 @@ AUXTimerTargetValSet(uint32_t ui32Timer, uint32_t ui32Target)
 {
     uint32_t ui32Addr;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Timer == AUX_TIMER_0) || (ui32Timer == AUX_TIMER_1));
     ASSERT(((ui32Timer & AUX_TIMER_0) && (ui32Target <= 65535)) ||
            ((ui32Timer & AUX_TIMER_1) && (ui32Target <= 255)));
@@ -354,9 +352,7 @@ AUXTimerTargetValSet(uint32_t ui32Timer, uint32_t ui32Target)
 __STATIC_INLINE uint32_t
 AUXTimerTargetValGet(uint32_t ui32Timer)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Timer == AUX_TIMER_0) || (ui32Timer == AUX_TIMER_1));
 
     return(HWREG((ui32Timer & AUX_TIMER_0) ?
@@ -379,6 +375,7 @@ AUXTimerTargetValGet(uint32_t ui32Timer)
 //! \param ui32Timer is the timer to set the prescale on.
 //! - \ref AUX_TIMER_0
 //! - \ref AUX_TIMER_1
+//! - \ref AUX_TIMER_BOTH
 //! \param ui32PrescaleDiv is the prescaler division ratio.
 //! - \ref AUX_TIMER_PRESCALE_DIV_1     : Prescale division ratio 1
 //! - \ref AUX_TIMER_PRESCALE_DIV_2     : Prescale division ratio 2
@@ -442,7 +439,7 @@ extern uint32_t AUXTimerPrescaleGet(uint32_t ui32Timer);
 //
 //*****************************************************************************
 #if !defined(DRIVERLIB_NOROM) && !defined(DOXYGEN)
-    #include <driverlib/rom.h>
+    #include "../driverlib/rom.h"
     #ifdef ROM_AUXTimerConfigure
         #undef  AUXTimerConfigure
         #define AUXTimerConfigure               ROM_AUXTimerConfigure

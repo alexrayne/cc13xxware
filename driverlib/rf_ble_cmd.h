@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       rf_ble_cmd.h
-*  Revised:        $ $
-*  Revision:       $ $
+*  Revised:        2017-11-10 10:42:47 +0100 (Fri, 10 Nov 2017)
+*  Revision:       18052
 *
-*  Description:    CC26xx/CC13xx API for Bluetooth Low Energy commands
+*  Description:    CC13x0 API for Bluetooth Low Energy commands
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,16 @@
 #define __BLE_CMD_H
 
 #ifndef __RFC_STRUCT
-#ifdef __GNUC__
-#define __RFC_STRUCT __attribute__ ((aligned (4)))
-#else
 #define __RFC_STRUCT
+#endif
+
+#ifndef __RFC_STRUCT_ATTR
+#if defined(__GNUC__)
+#define __RFC_STRUCT_ATTR __attribute__ ((aligned (4)))
+#elif defined(__TI_ARM__)
+#define __RFC_STRUCT_ATTR __attribute__ ((__packed__,aligned (4)))
+#else
+#define __RFC_STRUCT_ATTR
 #endif
 #endif
 
@@ -54,8 +60,8 @@
 //! @{
 
 #include <stdint.h>
-#include <driverlib/rf_mailbox.h>
-#include <driverlib/rf_common_cmd.h>
+#include "rf_mailbox.h"
+#include "rf_common_cmd.h"
 
 typedef struct __RFC_STRUCT rfc_bleRadioOp_s rfc_bleRadioOp_t;
 typedef struct __RFC_STRUCT rfc_CMD_BLE_SLAVE_s rfc_CMD_BLE_SLAVE_t;
@@ -69,6 +75,7 @@ typedef struct __RFC_STRUCT rfc_CMD_BLE_INITIATOR_s rfc_CMD_BLE_INITIATOR_t;
 typedef struct __RFC_STRUCT rfc_CMD_BLE_GENERIC_RX_s rfc_CMD_BLE_GENERIC_RX_t;
 typedef struct __RFC_STRUCT rfc_CMD_BLE_TX_TEST_s rfc_CMD_BLE_TX_TEST_t;
 typedef struct __RFC_STRUCT rfc_CMD_BLE_ADV_PAYLOAD_s rfc_CMD_BLE_ADV_PAYLOAD_t;
+typedef struct __RFC_STRUCT rfc_CMD_BLE5_RADIO_SETUP_s rfc_CMD_BLE5_RADIO_SETUP_t;
 typedef struct __RFC_STRUCT rfc_bleMasterSlavePar_s rfc_bleMasterSlavePar_t;
 typedef struct __RFC_STRUCT rfc_bleMasterPar_s rfc_bleMasterPar_t;
 typedef struct __RFC_STRUCT rfc_bleSlavePar_s rfc_bleSlavePar_t;
@@ -108,8 +115,8 @@ struct __RFC_STRUCT rfc_bleRadioOp_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -121,7 +128,7 @@ struct __RFC_STRUCT rfc_bleRadioOp_s {
    } whitening;
    uint8_t* pParams;                    //!<        Pointer to command specific parameter structure
    uint8_t* pOutput;                    //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -149,8 +156,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_SLAVE_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -162,7 +169,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_SLAVE_s {
    } whitening;
    rfc_bleSlavePar_t *pParams;          //!<        Pointer to command specific parameter structure
    rfc_bleMasterSlaveOutput_t *pOutput; //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -190,8 +197,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_MASTER_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -203,7 +210,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_MASTER_s {
    } whitening;
    rfc_bleMasterPar_t *pParams;         //!<        Pointer to command specific parameter structure
    rfc_bleMasterSlaveOutput_t *pOutput; //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -231,8 +238,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -244,7 +251,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_s {
    } whitening;
    rfc_bleAdvPar_t *pParams;            //!<        Pointer to command specific parameter structure
    rfc_bleAdvOutput_t *pOutput;         //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -272,8 +279,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_DIR_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -285,7 +292,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_DIR_s {
    } whitening;
    rfc_bleAdvPar_t *pParams;            //!<        Pointer to command specific parameter structure
    rfc_bleAdvOutput_t *pOutput;         //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -313,8 +320,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_NC_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -326,7 +333,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_NC_s {
    } whitening;
    rfc_bleAdvPar_t *pParams;            //!<        Pointer to command specific parameter structure
    rfc_bleAdvOutput_t *pOutput;         //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -354,8 +361,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_SCAN_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -367,7 +374,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_SCAN_s {
    } whitening;
    rfc_bleAdvPar_t *pParams;            //!<        Pointer to command specific parameter structure
    rfc_bleAdvOutput_t *pOutput;         //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -395,8 +402,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_SCANNER_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -408,7 +415,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_SCANNER_s {
    } whitening;
    rfc_bleScannerPar_t *pParams;        //!<        Pointer to command specific parameter structure
    rfc_bleScannerOutput_t *pOutput;     //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -436,8 +443,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_INITIATOR_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -449,7 +456,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_INITIATOR_s {
    } whitening;
    rfc_bleInitiatorPar_t *pParams;      //!<        Pointer to command specific parameter structure
    rfc_bleInitiatorOutput_t *pOutput;   //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -477,8 +484,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_GENERIC_RX_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -490,7 +497,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_GENERIC_RX_s {
    } whitening;
    rfc_bleGenericRxPar_t *pParams;      //!<        Pointer to command specific parameter structure
    rfc_bleGenericRxOutput_t *pOutput;   //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -518,8 +525,8 @@ struct __RFC_STRUCT rfc_CMD_BLE_TX_TEST_s {
       uint8_t nSkip:4;                  //!<        Number of skips + 1 if the rule involves skipping. 0: same, 1: next, 2: skip next, ...
    } condition;
    uint8_t channel;                     //!< \brief Channel to use<br>
-                                        //!<        0&ndash;39: BLE advertising/data channel number<br>
-                                        //!<        60&ndash;207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
+                                        //!<        0--39: BLE advertising/data channel number<br>
+                                        //!<        60--207: Custom frequency; (2300 + <code>channel</code>) MHz<br>
                                         //!<        255: Use existing frequency<br>
                                         //!<        Others: <i>Reserved</i>
    struct {
@@ -531,7 +538,7 @@ struct __RFC_STRUCT rfc_CMD_BLE_TX_TEST_s {
    } whitening;
    rfc_bleTxTestPar_t *pParams;         //!<        Pointer to command specific parameter structure
    rfc_bleTxTestOutput_t *pOutput;      //!<        Pointer to command specific output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -546,7 +553,17 @@ struct __RFC_STRUCT rfc_CMD_BLE_ADV_PAYLOAD_s {
    uint8_t newLen;                      //!<        Length of the new payload
    uint8_t* pNewData;                   //!<        Pointer to the buffer containing the new data
    rfc_bleAdvPar_t *pParams;            //!<        Pointer to the parameter structure to update
-};
+} __RFC_STRUCT_ATTR;
+
+//! @}
+
+//! \addtogroup CMD_BLE5_RADIO_SETUP
+//! @{
+#define CMD_BLE5_RADIO_SETUP                                    0x1820
+//! Define only for compatibility with CC26XXR2F family. Command will result in error if sent.
+struct __RFC_STRUCT rfc_CMD_BLE5_RADIO_SETUP_s {
+   uint8_t dummy0;
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -578,10 +595,10 @@ struct __RFC_STRUCT rfc_bleMasterSlavePar_s {
    uint8_t maxNack;                     //!<        Maximum number of NACKs received before operation ends. 0: No limit
    uint8_t maxPkt;                      //!<        Maximum number of packets transmitted in the operation before it ends. 0: No limit
    uint32_t accessAddress;              //!<        Access address used on the connection
-   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection &ndash; least significant byte
-   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection &ndash; middle byte
-   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection &ndash; most significant byte
-};
+   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection -- least significant byte
+   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection -- middle byte
+   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection -- most significant byte
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -615,9 +632,9 @@ struct __RFC_STRUCT rfc_bleMasterPar_s {
    uint8_t maxNack;                     //!<        Maximum number of NACKs received before operation ends. 0: No limit
    uint8_t maxPkt;                      //!<        Maximum number of packets transmitted in the operation before it ends. 0: No limit
    uint32_t accessAddress;              //!<        Access address used on the connection
-   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection &ndash; least significant byte
-   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection &ndash; middle byte
-   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection &ndash; most significant byte
+   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection -- least significant byte
+   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection -- middle byte
+   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection -- most significant byte
    struct {
       uint8_t triggerType:4;            //!<        The type of trigger
       uint8_t bEnaCmd:1;                //!< \brief 0: No alternative trigger command<br>
@@ -628,7 +645,7 @@ struct __RFC_STRUCT rfc_bleMasterPar_s {
    } endTrigger;                        //!<        Trigger that causes the device to end the connection event as soon as allowed
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to end the
                                         //!<        connection event as soon as allowed
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -662,9 +679,9 @@ struct __RFC_STRUCT rfc_bleSlavePar_s {
    uint8_t maxNack;                     //!<        Maximum number of NACKs received before operation ends. 0: No limit
    uint8_t maxPkt;                      //!<        Maximum number of packets transmitted in the operation before it ends. 0: No limit
    uint32_t accessAddress;              //!<        Access address used on the connection
-   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection &ndash; least significant byte
-   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection &ndash; middle byte
-   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection &ndash; most significant byte
+   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection -- least significant byte
+   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection -- middle byte
+   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection -- most significant byte
    struct {
       uint8_t triggerType:4;            //!<        The type of trigger
       uint8_t bEnaCmd:1;                //!< \brief 0: No alternative trigger command<br>
@@ -687,7 +704,7 @@ struct __RFC_STRUCT rfc_bleSlavePar_s {
    } endTrigger;                        //!<        Trigger that causes the device to end the connection event as soon as allowed
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to end the
                                         //!<        connection event as soon as allowed
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -715,8 +732,8 @@ struct __RFC_STRUCT rfc_bleAdvPar_s {
                                         //!<        2: Process scan requests from all devices and only connect requests from
                                         //!<        devices that are in the white list<br>
                                         //!<        3: Process scan and connect requests only from devices in the white list
-      uint8_t deviceAddrType:1;         //!<        The type of the device address &ndash; public (0) or random (1)
-      uint8_t peerAddrType:1;           //!<        Directed advertiser: The type of the peer address &ndash; public (0) or random (1)
+      uint8_t deviceAddrType:1;         //!<        The type of the device address -- public (0) or random (1)
+      uint8_t peerAddrType:1;           //!<        Directed advertiser: The type of the peer address -- public (0) or random (1)
       uint8_t bStrictLenFilter:1;       //!< \brief 0: Accept any packet with a valid advertising packet length<br>
                                         //!<        1: Discard messages with illegal length for the given packet type
       uint8_t :2;
@@ -742,7 +759,7 @@ struct __RFC_STRUCT rfc_bleAdvPar_s {
    } endTrigger;                        //!<        Trigger that causes the device to end the advertiser event as soon as allowed
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to end the
                                         //!<        advertiser event as soon as allowed
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -769,7 +786,7 @@ struct __RFC_STRUCT rfc_bleScannerPar_s {
                                         //!<        is in the White list.
       uint8_t bActiveScan:1;            //!< \brief 0: Passive scan<br>
                                         //!<        1: Active scan
-      uint8_t deviceAddrType:1;         //!<        The type of the device address &ndash; public (0) or random (1)
+      uint8_t deviceAddrType:1;         //!<        The type of the device address -- public (0) or random (1)
       uint8_t :1;
       uint8_t bStrictLenFilter:1;       //!< \brief 0: Accept any packet with a valid advertising packet length<br>
                                         //!<        1: Discard messages with illegal length for the given packet type
@@ -814,7 +831,7 @@ struct __RFC_STRUCT rfc_bleScannerPar_s {
                                         //!<        receiving as soon as allowed, ending with BLE_DONE_RXTIMEOUT
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to stop
                                         //!<        receiving as soon as allowed, ending with BLE_DONE_ENDED
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -840,8 +857,8 @@ struct __RFC_STRUCT rfc_bleInitiatorPar_s {
                                         //!<        1: Use white list
       uint8_t bDynamicWinOffset:1;      //!< \brief 0: No dynamic WinOffset insertion<br>
                                         //!<        1: Use dynamic WinOffset insertion
-      uint8_t deviceAddrType:1;         //!<        The type of the device address &ndash; public (0) or random (1)
-      uint8_t peerAddrType:1;           //!<        The type of the peer address &ndash; public (0) or random (1)
+      uint8_t deviceAddrType:1;         //!<        The type of the device address -- public (0) or random (1)
+      uint8_t peerAddrType:1;           //!<        The type of the peer address -- public (0) or random (1)
       uint8_t bStrictLenFilter:1;       //!< \brief 0: Accept any packet with a valid advertising packet length<br>
                                         //!<        1: Discard messages with illegal length for the given packet type
    } initConfig;
@@ -874,7 +891,7 @@ struct __RFC_STRUCT rfc_bleInitiatorPar_s {
                                         //!<        receiving as soon as allowed, ending with BLE_DONE_RXTIMEOUT
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to stop
                                         //!<        receiving as soon as allowed, ending with BLE_DONE_ENDED
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -898,9 +915,9 @@ struct __RFC_STRUCT rfc_bleGenericRxPar_s {
                                         //!<        1: Restart receiver after receiving a packet
    uint16_t __dummy0;
    uint32_t accessAddress;              //!<        Access address used on the connection
-   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection &ndash; least significant byte
-   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection &ndash; middle byte
-   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection &ndash; most significant byte
+   uint8_t crcInit0;                    //!<        CRC initialization value used on the connection -- least significant byte
+   uint8_t crcInit1;                    //!<        CRC initialization value used on the connection -- middle byte
+   uint8_t crcInit2;                    //!<        CRC initialization value used on the connection -- most significant byte
    struct {
       uint8_t triggerType:4;            //!<        The type of trigger
       uint8_t bEnaCmd:1;                //!< \brief 0: No alternative trigger command<br>
@@ -911,7 +928,7 @@ struct __RFC_STRUCT rfc_bleGenericRxPar_s {
    } endTrigger;                        //!<        Trigger that causes the device to end the Rx operation
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to end the
                                         //!<        Rx operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -946,7 +963,7 @@ struct __RFC_STRUCT rfc_bleTxTestPar_s {
    } endTrigger;                        //!<        Trigger that causes the device to end the Test Tx operation
    ratmr_t endTime;                     //!< \brief Time used together with <code>endTrigger</code> that causes the device to end the
                                         //!<        Test Tx operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -985,7 +1002,7 @@ struct __RFC_STRUCT rfc_bleMasterSlaveOutput_s {
                                         //!<        0 otherwise
    } pktStatus;
    ratmr_t timeStamp;                   //!<        Slave operation: Time stamp of first received packet
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1004,7 +1021,7 @@ struct __RFC_STRUCT rfc_bleAdvOutput_s {
    uint8_t nRxBufFull;                  //!<        Number of packets received that did not fit in Rx queue
    int8_t lastRssi;                     //!<        The RSSI of the last received packet
    ratmr_t timeStamp;                   //!<        Time stamp of the last received packet
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1026,7 +1043,7 @@ struct __RFC_STRUCT rfc_bleScannerOutput_s {
    int8_t lastRssi;                     //!<        The RSSI of the last received packet
    uint8_t __dummy0;
    ratmr_t timeStamp;                   //!<        Time stamp of the last successfully received ADV*_IND packet that was not ignored
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1042,7 +1059,7 @@ struct __RFC_STRUCT rfc_bleInitiatorOutput_s {
    uint8_t nRxAdvBufFull;               //!<        Number of ADV*_IND packets received that did not fit in Rx queue
    int8_t lastRssi;                     //!<        The RSSI of the last received packet
    ratmr_t timeStamp;                   //!<        Time stamp of the received ADV*_IND packet that caused transmission of CONNECT_REQ
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1057,7 +1074,7 @@ struct __RFC_STRUCT rfc_bleGenericRxOutput_s {
    int8_t lastRssi;                     //!<        The RSSI of the last received packet
    uint8_t __dummy0;
    ratmr_t timeStamp;                   //!<        Time stamp of the last received packet
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1067,7 +1084,7 @@ struct __RFC_STRUCT rfc_bleGenericRxOutput_s {
 
 struct __RFC_STRUCT rfc_bleTxTestOutput_s {
    uint16_t nTx;                        //!<        Number of packets transmitted
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1079,7 +1096,7 @@ struct __RFC_STRUCT rfc_bleWhiteListEntry_s {
    uint8_t size;                        //!<        Number of while list entries. Used in the first entry of the list only
    struct {
       uint8_t bEnable:1;                //!<        1 if the entry is in use, 0 if the entry is not in use
-      uint8_t addrType:1;               //!<        The type address in the entry &ndash; public (0) or random (1)
+      uint8_t addrType:1;               //!<        The type address in the entry -- public (0) or random (1)
       uint8_t bWlIgn:1;                 //!< \brief 1 if the entry is to be ignored by a scanner, 0 otherwise. Used to mask out
                                         //!<        entries that have already been scanned and reported.
       uint8_t :1;
@@ -1088,7 +1105,7 @@ struct __RFC_STRUCT rfc_bleWhiteListEntry_s {
    } conf;
    uint16_t address;                    //!<        Least significant 16 bits of the address contained in the entry
    uint32_t addressHi;                  //!<        Most significant 32 bits of the address contained in the entry
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -1099,11 +1116,11 @@ struct __RFC_STRUCT rfc_bleWhiteListEntry_s {
 struct __RFC_STRUCT rfc_bleRxStatus_s {
    struct {
       uint8_t channel:6;                //!< \brief The channel on which the packet was received, provided channel is in the range
-                                        //!<        0&ndash;39; otherwise 0x3F
+                                        //!<        0--39; otherwise 0x3F
       uint8_t bIgnore:1;                //!<        1 if the packet is marked as ignored, 0 otherwise
       uint8_t bCrcErr:1;                //!<        1 if the packet was received with CRC error, 0 otherwise
    } status;
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 

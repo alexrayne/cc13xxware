@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       rf_patch_rfe_lrm.h
-*  Revised:        $Date$
-*  Revision:       $Revision$
+*  Revised:        $Date: 2019-01-31 15:04:25 +0100 (Thu, 31 Jan 2019) $
+*  Revision:       $Revision: 18842 $
 *
-*  Description: RF core patch for CC13XX Long range mode
+*  Description: RF core patch for CC13x0 Legacy Long Range Mode
 *
-*  Copyright (c) 2015-2016, Texas Instruments Incorporated
+*  Copyright (c) 2015-2019, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@
 #define _RF_PATCH_RFE_LRM_H
 
 #include <stdint.h>
-#include <inc/hw_types.h>
+#include "../inc/hw_types.h"
 
 #ifndef RFE_PATCH_TYPE
 #define RFE_PATCH_TYPE static const uint32_t
@@ -53,6 +53,10 @@
 
 #ifndef RFC_RFERAM_BASE
 #define RFC_RFERAM_BASE 0x2100C000
+#endif
+
+#ifndef RFE_PATCH_MODE
+#define RFE_PATCH_MODE 0
 #endif
 
 RFE_PATCH_TYPE patchLrmRfe[429] = { 

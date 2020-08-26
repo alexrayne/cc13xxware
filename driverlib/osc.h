@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       osc.h
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2019-02-14 09:35:31 +0100 (Thu, 14 Feb 2019)
+*  Revision:       54539
 *
 *  Description:    Defines and prototypes for the system oscillator control.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -61,14 +61,14 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_aon_wuc.h>
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_ddi.h>
-#include <inc/hw_ddi_0_osc.h>
-#include <driverlib/rom.h>
-#include <driverlib/ddi.h>
-#include <driverlib/debug.h>
+#include "../inc/hw_aon_wuc.h"
+#include "../inc/hw_types.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_ddi.h"
+#include "../inc/hw_ddi_0_osc.h"
+#include "rom.h"
+#include "ddi.h"
+#include "debug.h"
 
 //*****************************************************************************
 //
@@ -93,6 +93,7 @@ extern "C"
     #define OSCHF_DebugGetCrystalAmplitude  NOROM_OSCHF_DebugGetCrystalAmplitude
     #define OSCHF_DebugGetExpectedAverageCrystalAmplitude NOROM_OSCHF_DebugGetExpectedAverageCrystalAmplitude
     #define OSC_HPOSCRelativeFrequencyOffsetGet NOROM_OSC_HPOSCRelativeFrequencyOffsetGet
+    #define OSC_AdjustXoscHfCapArray        NOROM_OSC_AdjustXoscHfCapArray
     #define OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert NOROM_OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
 #endif
 
@@ -149,15 +150,11 @@ extern "C"
 __STATIC_INLINE void
 OSCXHfPowerModeSet(uint32_t ui32Mode)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Mode == LOW_POWER_XOSC) ||
            (ui32Mode == HIGH_POWER_XOSC));
 
-    //
     // Change the power mode.
-    //
     DDI16BitWrite(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_CTL0, DDI_0_OSC_CTL0_XOSC_HF_POWER_MODE,
                   ui32Mode);
 }
@@ -215,9 +212,9 @@ OSCClockLossEventDisable( void )
 //! Use this function to set the oscillator source for one or more of the
 //! system source clocks.
 //!
-//! When selecting the high frequency clock source, this function will not do
+//! When selecting the high frequency clock source (OSC_SRC_CLK_HF), this function will not do
 //! the actual switch. Enabling the high frequency XTAL can take several hundred
-//! micro seconds, so the actual switch is split into a separate function,
+//! micro seconds, so the actual switch is done in a separate function, \ref OSCHfSourceSwitch(),
 //! leaving System CPU free to perform other tasks as the XTAL starts up.
 //!
 //! \note The High Frequency (\ref OSC_SRC_CLK_HF) and Medium Frequency
@@ -241,7 +238,7 @@ OSCClockLossEventDisable( void )
 //! - \ref OSC_RCOSC_LF (only when ui32SrcClk is \ref OSC_SRC_CLK_LF)
 //! - \ref OSC_XOSC_LF (only when ui32SrcClk is \ref OSC_SRC_CLK_LF)
 //!
-//! \sa OSCClockSourceGet()
+//! \sa \ref OSCClockSourceGet(), \ref OSCHfSourceSwitch()
 //!
 //! \return None
 //
@@ -289,9 +286,7 @@ extern uint32_t OSCClockSourceGet(uint32_t ui32SrcClk);
 __STATIC_INLINE bool
 OSCHfSourceReady(void)
 {
-    //
     // Return the readiness of the HF clock source
-    //
     return (DDI16BitfieldRead(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_STAT0,
                               DDI_0_OSC_STAT0_PENDINGSCLKHFSWITCHING_M,
                               DDI_0_OSC_STAT0_PENDINGSCLKHFSWITCHING_S)) ?
@@ -304,7 +299,7 @@ OSCHfSourceReady(void)
 //!
 //! When switching the HF clock source the clock period might be prolonged
 //! leaving the clock 'stuck-at' high or low for a few cycles. To ensure that
-//! this does not coincide with a read access to the Flash potentially
+//! this does not coincide with a read access to the Flash, potentially
 //! freezing the device, the HF clock source switch must be executed from ROM.
 //!
 //! \note This function will not return until the clock source has been
@@ -319,57 +314,8 @@ OSCHfSourceReady(void)
 __STATIC_INLINE void
 OSCHfSourceSwitch(void)
 {
-    //
     // Switch the HF clock source
-    //
     HapiHFSourceSafeSwitch();
-}
-
-//*****************************************************************************
-//
-//! \brief Deprecated: Empty function - original functionality is removed.
-//!
-//! \deprecated Functionality has been moved to the startup code. The dummy function
-//! will be removed in the next major release of CC26xxWare/CC13xxWare.
-//!
-//! The original functionality was described as follows:
-//! Enable System CPU access to the OSC_DIG module.
-//! Force power on AUX and enable clocks to allow System CPU access on
-//! the OSC_DIG interface.
-//!
-//! \note Access to the OSC_DIG interface is a shared resource between the
-//! Sensor Controller and the CPU, so enabling or disabling this interface must
-//! be done with consideration.
-//!
-//! \return None
-//
-//*****************************************************************************
-__STATIC_INLINE void
-OSCInterfaceEnable(void)
-{
-}
-
-//*****************************************************************************
-//
-//! \brief Deprecated: Empty function - original functionality is removed.
-//!
-//! \deprecated Functionality has been moved to the startup code. The dummy function
-//! will be removed in the next major release of CC26xxWare/CC13xxWare.
-//!
-//! The original functionality was described as follows:
-//! Disable System CPU access to the OSC_DIG module.
-//! Release the "force power on" of AUX and disable clock to AUX.
-//!
-//! \note Access to the OSC_DIG interface is a shared resource between the
-//! Sensor Controller and the CPU, so enabling or disabling this interface must
-//! be done with consideration.
-//!
-//! \return None
-//
-//*****************************************************************************
-__STATIC_INLINE void
-OSCInterfaceDisable(void)
-{
 }
 
 //*****************************************************************************
@@ -387,7 +333,6 @@ OSCInterfaceDisable(void)
 //*****************************************************************************
 extern uint32_t OSCHF_GetStartupTime( uint32_t timeUntilWakeupInMs );
 
-
 //*****************************************************************************
 //
 //! \brief Turns on XOSC_HF (but without switching to XOSC_HF).
@@ -399,7 +344,6 @@ extern uint32_t OSCHF_GetStartupTime( uint32_t timeUntilWakeupInMs );
 //
 //*****************************************************************************
 extern void OSCHF_TurnOnXosc( void );
-
 
 //*****************************************************************************
 //
@@ -415,7 +359,6 @@ extern void OSCHF_TurnOnXosc( void );
 //
 //*****************************************************************************
 extern bool OSCHF_AttemptToSwitchToXosc( void );
-
 
 //*****************************************************************************
 //
@@ -499,6 +442,24 @@ extern int32_t OSC_HPOSCRelativeFrequencyOffsetGet( int32_t tempDegC );
 
 //*****************************************************************************
 //
+//! \brief Adjust the XOSC HF cap array relative to the factory setting
+//!
+//! The cap array factory setting (FCFG) can be converted to a number in the range 0 - 63.
+//! Both this function and the customer configuration (CCFG) setting can apply a delta to the FCFG setting.
+//! The CCFG setting is automatically applied at boot time (See ../startup_files/ccfg.c).
+//! Calling this function will discard the CCFG setting and adjust relative to the FCFG setting.
+//!
+//! \note Adjusted value will not take effect before XOSC_HF is stopped and restarted
+//!
+//! \param capArrDelta specifies number of step to adjust the cap array relative to the factory setting.
+//!
+//! \return None
+//
+//*****************************************************************************
+extern void OSC_AdjustXoscHfCapArray( int32_t capArrDelta );
+
+//*****************************************************************************
+//
 //! \brief Converts the relative frequency offset of HPOSC to the RF Core parameter format.
 //!
 //! The HPOSC (High Precision Oscillator) clock is used by the RF Core.
@@ -518,13 +479,14 @@ extern int32_t OSC_HPOSCRelativeFrequencyOffsetGet( int32_t tempDegC );
 //! -   F_HPOSC is the current HPOSC frequency.
 //! -   RfCoreRelFreqOffset is the relative frequency offset in the "RF Core" format (the value returned).
 //!
+//! \param HPOSC_RelFreqOffset is the relative frequency offset parameter d returned from \ref OSC_HPOSCRelativeFrequencyOffsetGet()
+//!
 //! \return Returns the relative frequency offset in RF Core format.
 //!
 //! \sa OSC_HPOSCRelativeFrequencyOffsetGet()
 //
 //*****************************************************************************
 extern int16_t OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert( int32_t HPOSC_RelFreqOffset );
-
 
 //*****************************************************************************
 //
@@ -533,7 +495,7 @@ extern int16_t OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert( int32_t HP
 //
 //*****************************************************************************
 #if !defined(DRIVERLIB_NOROM) && !defined(DOXYGEN)
-    #include <driverlib/rom.h>
+    #include "../driverlib/rom.h"
     #ifdef ROM_OSCClockSourceSet
         #undef  OSCClockSourceSet
         #define OSCClockSourceSet               ROM_OSCClockSourceSet
@@ -570,6 +532,10 @@ extern int16_t OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert( int32_t HP
         #undef  OSC_HPOSCRelativeFrequencyOffsetGet
         #define OSC_HPOSCRelativeFrequencyOffsetGet ROM_OSC_HPOSCRelativeFrequencyOffsetGet
     #endif
+    #ifdef ROM_OSC_AdjustXoscHfCapArray
+        #undef  OSC_AdjustXoscHfCapArray
+        #define OSC_AdjustXoscHfCapArray        ROM_OSC_AdjustXoscHfCapArray
+    #endif
     #ifdef ROM_OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
         #undef  OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
         #define OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert ROM_OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
@@ -584,7 +550,6 @@ extern int16_t OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert( int32_t HP
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif // __OSC_H__
 

@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       rf_hs_mailbox.h
-*  Revised:        $ $
-*  Revision:       $ $
+*  Revised:        2017-11-03 15:06:37 +0100 (Fri, 03 Nov 2017)
+*  Revision:       18032
 *
 *  Description:     Definitions for high-speed mode radio interface
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without

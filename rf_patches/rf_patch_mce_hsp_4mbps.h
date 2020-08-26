@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       rf_patch_mce_hsp_4mbps.h
-*  Revised:        $Date: 2016-06-08 15:35:28 +0200 (on, 08 jun 2016) $
-*  Revision:       $Revision: 17220 $
+*  Revised:        $Date: 2019-01-31 15:04:25 +0100 (Thu, 31 Jan 2019) $
+*  Revision:       $Revision: 18842 $
 *
-*  Description: RF core patch for CC13XX 4Mbps High speed mode
+*  Description: RF core patch for CC13x0 4Mbps High speed mode
 *
-*  Copyright (c) 2015-2016, Texas Instruments Incorporated
+*  Copyright (c) 2015-2019, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 #define _RF_PATCH_MCE_HSP_4MBPS_H
 
 #include <stdint.h>
-#include <inc/hw_types.h>
+#include "../inc/hw_types.h"
 
 #ifndef MCE_PATCH_TYPE
 #define MCE_PATCH_TYPE static const uint32_t
@@ -52,6 +52,10 @@
 
 #ifndef RFC_MCERAM_BASE
 #define RFC_MCERAM_BASE 0x21008000
+#endif
+
+#ifndef MCE_PATCH_MODE
+#define MCE_PATCH_MODE 0
 #endif
 
 MCE_PATCH_TYPE patchHsp4mbpsMce[252] = { 

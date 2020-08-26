@@ -1,9 +1,9 @@
 /******************************************************************************
 *  Filename:       hw_adi_4_aux_h
-*  Revised:        2016-06-07 14:59:08 +0200 (Tue, 07 Jun 2016)
-*  Revision:       46618
+*  Revised:        2017-05-04 21:56:26 +0200 (Thu, 04 May 2017)
+*  Revision:       48904
 *
-* Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+* Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -81,24 +81,6 @@
 // Register: ADI_4_AUX_O_MUX0
 //
 //*****************************************************************************
-// Field:   [7:4] COMPA_IN
-//
-// Internal. Only to be used through TI provided API.
-// ENUMs:
-// FCAP1                    Internal. Only to be used through TI provided API.
-// FCAP0                    Internal. Only to be used through TI provided API.
-// ATEST1                   Internal. Only to be used through TI provided API.
-// ATEST0                   Internal. Only to be used through TI provided API.
-// NC                       Internal. Only to be used through TI provided API.
-#define ADI_4_AUX_MUX0_COMPA_IN_W                                            4
-#define ADI_4_AUX_MUX0_COMPA_IN_M                                   0x000000F0
-#define ADI_4_AUX_MUX0_COMPA_IN_S                                            4
-#define ADI_4_AUX_MUX0_COMPA_IN_FCAP1                               0x00000080
-#define ADI_4_AUX_MUX0_COMPA_IN_FCAP0                               0x00000040
-#define ADI_4_AUX_MUX0_COMPA_IN_ATEST1                              0x00000020
-#define ADI_4_AUX_MUX0_COMPA_IN_ATEST0                              0x00000010
-#define ADI_4_AUX_MUX0_COMPA_IN_NC                                  0x00000000
-
 // Field:   [3:0] COMPA_REF
 //
 // Internal. Only to be used through TI provided API.

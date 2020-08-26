@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       osc.c
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2019-03-15 08:53:15 +0100 (Fri, 15 Mar 2019)
+*  Revision:       55262
 *
 *  Description:    Driver for setting up the system Oscillators
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -36,12 +36,13 @@
 *
 ******************************************************************************/
 
-#include <inc/hw_types.h>
-#include <inc/hw_ccfg.h>
-#include <inc/hw_fcfg1.h>
-#include <driverlib/aon_batmon.h>
-#include <driverlib/aon_rtc.h>
-#include <driverlib/osc.h>
+#include "../inc/hw_types.h"
+#include "../inc/hw_ccfg.h"
+#include "../inc/hw_fcfg1.h"
+#include "aon_batmon.h"
+#include "aon_rtc.h"
+#include "osc.h"
+#include "setup_rom.h"
 
 //*****************************************************************************
 //
@@ -68,9 +69,12 @@
     #define OSCHF_DebugGetExpectedAverageCrystalAmplitude NOROM_OSCHF_DebugGetExpectedAverageCrystalAmplitude
     #undef  OSC_HPOSCRelativeFrequencyOffsetGet
     #define OSC_HPOSCRelativeFrequencyOffsetGet NOROM_OSC_HPOSCRelativeFrequencyOffsetGet
+    #undef  OSC_AdjustXoscHfCapArray
+    #define OSC_AdjustXoscHfCapArray        NOROM_OSC_AdjustXoscHfCapArray
     #undef  OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
     #define OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert NOROM_OSC_HPOSCRelativeFrequencyOffsetToRFCoreFormatConvert
 #endif
+
 
 //*****************************************************************************
 //
@@ -91,7 +95,6 @@ typedef struct {
 
 static OscHfGlobals_t oscHfGlobals;
 
-
 //*****************************************************************************
 //
 //  Configure the oscillator input to the a source clock.
@@ -100,9 +103,7 @@ static OscHfGlobals_t oscHfGlobals;
 void
 OSCClockSourceSet(uint32_t ui32SrcClk, uint32_t ui32Osc)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32SrcClk & OSC_SRC_CLK_LF) ||
            (ui32SrcClk & OSC_SRC_CLK_MF) ||
            (ui32SrcClk & OSC_SRC_CLK_HF));
@@ -111,23 +112,17 @@ OSCClockSourceSet(uint32_t ui32SrcClk, uint32_t ui32Osc)
            (ui32Osc == OSC_XOSC_HF) ||
            (ui32Osc == OSC_XOSC_LF));
 
-    //
     // Request the high frequency source clock (using 24 MHz XTAL)
-    //
     if(ui32SrcClk & OSC_SRC_CLK_HF)
     {
-        //
         // Enable the HF XTAL as HF clock source
-        //
         DDI16BitfieldWrite(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_CTL0,
                            DDI_0_OSC_CTL0_SCLK_HF_SRC_SEL_M,
                            DDI_0_OSC_CTL0_SCLK_HF_SRC_SEL_S,
                            ui32Osc);
     }
 
-    //
     // Configure the medium frequency source clock
-    //
     if(ui32SrcClk & OSC_SRC_CLK_MF)
     {
         DDI16BitfieldWrite(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_CTL0,
@@ -136,14 +131,10 @@ OSCClockSourceSet(uint32_t ui32SrcClk, uint32_t ui32Osc)
                            ui32Osc);
     }
 
-    //
     // Configure the low frequency source clock.
-    //
     if(ui32SrcClk & OSC_SRC_CLK_LF)
     {
-        //
         // Change the clock source.
-        //
         DDI16BitfieldWrite(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_CTL0,
                            DDI_0_OSC_CTL0_SCLK_LF_SRC_SEL_M,
                            DDI_0_OSC_CTL0_SCLK_LF_SRC_SEL_S,
@@ -161,15 +152,11 @@ OSCClockSourceGet(uint32_t ui32SrcClk)
 {
     uint32_t ui32ClockSource;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32SrcClk & OSC_SRC_CLK_LF) ||
            (ui32SrcClk & OSC_SRC_CLK_HF));
 
-    //
     // Return the source for the selected clock.
-    //
     if(ui32SrcClk == OSC_SRC_CLK_LF)
     {
         ui32ClockSource = DDI16BitfieldRead(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_STAT0,
@@ -197,38 +184,40 @@ OSCHF_GetStartupTime( uint32_t timeUntilWakeupInMs )
    int32_t  deltaTempSinceXoscOn       ;
    uint32_t newStartupTimeInUs         ;
 
-   deltaTimeSinceXoscOnInMs = RTC_CV_TO_MS( AONRTCCurrentCompareValueGet() - oscHfGlobals.timeXoscOn_CV );
-   deltaTempSinceXoscOn     = AONBatMonTemperatureGetDegC() - oscHfGlobals.tempXoscOff;
+    {
+       deltaTimeSinceXoscOnInMs = RTC_CV_TO_MS( AONRTCCurrentCompareValueGet() - oscHfGlobals.timeXoscOn_CV );
+       deltaTempSinceXoscOn     = AONBatMonTemperatureGetDegC() - oscHfGlobals.tempXoscOff;
 
-   if ( deltaTempSinceXoscOn < 0 ) {
-      deltaTempSinceXoscOn = -deltaTempSinceXoscOn;
-   }
+       if ( deltaTempSinceXoscOn < 0 ) {
+          deltaTempSinceXoscOn = -deltaTempSinceXoscOn;
+       }
 
-   if (  (( timeUntilWakeupInMs + deltaTimeSinceXoscOnInMs )     > 3000 ) ||
-         ( deltaTempSinceXoscOn                                  >    5 ) ||
-         ( oscHfGlobals.timeXoscStable_CV < oscHfGlobals.timeXoscOn_CV  ) ||
-         ( oscHfGlobals.previousStartupTimeInUs                  ==   0 )    )
-   {
-      newStartupTimeInUs = 2000;
-      if (( HWREG( CCFG_BASE + CCFG_O_SIZE_AND_DIS_FLAGS ) & CCFG_SIZE_AND_DIS_FLAGS_DIS_XOSC_OVR_M ) == 0 ) {
-         newStartupTimeInUs = (( HWREG( CCFG_BASE + CCFG_O_MODE_CONF_1 ) &
-            CCFG_MODE_CONF_1_XOSC_MAX_START_M ) >>
-            CCFG_MODE_CONF_1_XOSC_MAX_START_S ) * 125;
-            // Note: CCFG startup time is "in units of 100us" adding 25% margin results in *125
-      }
-   } else {
-      newStartupTimeInUs = RTC_CV_TO_US( oscHfGlobals.timeXoscStable_CV - oscHfGlobals.timeXoscOn_CV );
-      newStartupTimeInUs += ( newStartupTimeInUs >> 2 ); // Add 25 percent margin
-      if ( newStartupTimeInUs < oscHfGlobals.previousStartupTimeInUs ) {
-         newStartupTimeInUs = oscHfGlobals.previousStartupTimeInUs;
-      }
-   }
+       if (  (( timeUntilWakeupInMs + deltaTimeSinceXoscOnInMs )     > 3000 ) ||
+             ( deltaTempSinceXoscOn                                  >    5 ) ||
+             ( oscHfGlobals.timeXoscStable_CV < oscHfGlobals.timeXoscOn_CV  ) ||
+             ( oscHfGlobals.previousStartupTimeInUs                  ==   0 )    )
+       {
+          newStartupTimeInUs = 2000;
+          if (( HWREG( CCFG_BASE + CCFG_O_SIZE_AND_DIS_FLAGS ) & CCFG_SIZE_AND_DIS_FLAGS_DIS_XOSC_OVR_M ) == 0 ) {
+             newStartupTimeInUs = (( HWREG( CCFG_BASE + CCFG_O_MODE_CONF_1 ) &
+                CCFG_MODE_CONF_1_XOSC_MAX_START_M ) >>
+                CCFG_MODE_CONF_1_XOSC_MAX_START_S ) * 125;
+                // Note: CCFG startup time is "in units of 100us" adding 25% margin results in *125
+          }
+       } else {
+          newStartupTimeInUs = RTC_CV_TO_US( oscHfGlobals.timeXoscStable_CV - oscHfGlobals.timeXoscOn_CV );
+          newStartupTimeInUs += ( newStartupTimeInUs >> 2 ); // Add 25 percent margin
+          if ( newStartupTimeInUs < oscHfGlobals.previousStartupTimeInUs ) {
+             newStartupTimeInUs = oscHfGlobals.previousStartupTimeInUs;
+          }
+       }
 
-   if ( newStartupTimeInUs < 200 ) {
-      newStartupTimeInUs = 200;
-   }
-   if ( newStartupTimeInUs > 4000 ) {
-      newStartupTimeInUs = 4000;
+       if ( newStartupTimeInUs < 200 ) {
+          newStartupTimeInUs = 200;
+       }
+       if ( newStartupTimeInUs > 4000 ) {
+          newStartupTimeInUs = 4000;
+       }
    }
    return ( newStartupTimeInUs );
 }
@@ -242,7 +231,11 @@ OSCHF_GetStartupTime( uint32_t timeUntilWakeupInMs )
 void
 OSCHF_TurnOnXosc( void )
 {
+#if ( defined( ROM_OSCClockSourceSet ))
+   ROM_OSCClockSourceSet( OSC_SRC_CLK_HF | OSC_SRC_CLK_MF, OSC_XOSC_HF );
+#else
    OSCClockSourceSet( OSC_SRC_CLK_HF | OSC_SRC_CLK_MF, OSC_XOSC_HF );
+#endif
    oscHfGlobals.timeXoscOn_CV  = AONRTCCurrentCompareValueGet();
 }
 
@@ -258,16 +251,19 @@ OSCHF_AttemptToSwitchToXosc( void )
    uint32_t startupTimeInUs;
    uint32_t prevLimmit25InUs;
 
-   if ( OSCClockSourceGet( OSC_SRC_CLK_HF ) == OSC_XOSC_HF ) {
+#if ( defined( ROM_OSCClockSourceGet ))
+   if ( ROM_OSCClockSourceGet( OSC_SRC_CLK_HF ) == OSC_XOSC_HF )
+#else
+   if ( OSCClockSourceGet( OSC_SRC_CLK_HF ) == OSC_XOSC_HF )
+#endif
+   {
       // Already on XOSC - nothing to do
       return ( 1 );
    }
    if ( OSCHfSourceReady()) {
       OSCHfSourceSwitch();
 
-      //
       // Store startup time, but limit to 25 percent reduction each time.
-      //
       oscHfGlobals.timeXoscStable_CV  = AONRTCCurrentCompareValueGet();
       startupTimeInUs   = RTC_CV_TO_US( oscHfGlobals.timeXoscStable_CV - oscHfGlobals.timeXoscOn_CV );
       prevLimmit25InUs  = oscHfGlobals.previousStartupTimeInUs;
@@ -290,21 +286,44 @@ OSCHF_AttemptToSwitchToXosc( void )
 void
 OSCHF_SwitchToRcOscTurnOffXosc( void )
 {
-   //
    // Set SCLK_HF and SCLK_MF to RCOSC_HF without checking
    // Doing this anyway to keep HF and MF in sync
-   //
+#if ( defined( ROM_OSCClockSourceSet ))
+   ROM_OSCClockSourceSet( OSC_SRC_CLK_HF | OSC_SRC_CLK_MF, OSC_RCOSC_HF );
+#else
    OSCClockSourceSet( OSC_SRC_CLK_HF | OSC_SRC_CLK_MF, OSC_RCOSC_HF );
+#endif
 
-   //
    // Do the switching if not already running on RCOSC_HF
-   //
-   if ( OSCClockSourceGet( OSC_SRC_CLK_HF ) != OSC_RCOSC_HF ) {
+#if ( defined( ROM_OSCClockSourceGet ))
+   if ( ROM_OSCClockSourceGet( OSC_SRC_CLK_HF ) != OSC_RCOSC_HF )
+#else
+   if ( OSCClockSourceGet( OSC_SRC_CLK_HF ) != OSC_RCOSC_HF )
+#endif
+   {
       OSCHfSourceSwitch();
    }
 
    oscHfGlobals.timeXoscOff_CV  = AONRTCCurrentCompareValueGet();
    oscHfGlobals.tempXoscOff     = AONBatMonTemperatureGetDegC();
+}
+
+//*****************************************************************************
+//
+// Adjust the XOSC HF cap array relative to the factory setting
+//
+//*****************************************************************************
+void
+OSC_AdjustXoscHfCapArray( int32_t capArrDelta )
+{
+   // read the MODE_CONF register in CCFG
+   uint32_t ccfg_ModeConfReg = HWREG( CCFG_BASE + CCFG_O_MODE_CONF );
+   // Clear CAP_MODE and the CAPARRAY_DELATA field
+   ccfg_ModeConfReg &= ~( CCFG_MODE_CONF_XOSC_CAPARRAY_DELTA_M | CCFG_MODE_CONF_XOSC_CAP_MOD_M );
+   // Insert new delta value
+   ccfg_ModeConfReg |= ((((uint32_t)capArrDelta) << CCFG_MODE_CONF_XOSC_CAPARRAY_DELTA_S ) & CCFG_MODE_CONF_XOSC_CAPARRAY_DELTA_M );
+   // Update the HW register with the new delta value
+   DDI32RegWrite(AUX_DDI0_OSC_BASE, DDI_0_OSC_O_ANABYPASSVAL1, SetupGetTrimForAnabypassValue1( ccfg_ModeConfReg ));
 }
 
 //*****************************************************************************
@@ -316,17 +335,20 @@ int32_t
 OSC_HPOSCRelativeFrequencyOffsetGet( int32_t tempDegC )
 {
    // Estimate HPOSC frequency, using temperature and curve fitting parameters
-   uint32_t fitParams = HWREG(FCFG1_BASE + FCFG1_O_FREQ_OFFSET);
+
+   uint32_t fitParams = HWREG( FCFG1_BASE + FCFG1_O_FREQ_OFFSET );
    // Extract the P0,P1,P2 params, and sign extend them via shifting up/down
-   int32_t paramP0 = ((((int32_t) fitParams) << (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_S))
-                                             >> (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_W));
-   int32_t paramP1 = ((((int32_t) fitParams) << (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_S))
-                                             >> (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_W));
-   int32_t paramP2 = ((((int32_t) fitParams) << (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_S))
-                                             >> (32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_W));
-   int32_t paramP3 = ((((int32_t) HWREG(FCFG1_BASE + FCFG1_O_MISC_CONF_2))
-                                             << (32 - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_W - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_S))
-                                             >> (32 - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_W));
+   int32_t paramP0 = (((int32_t)( fitParams  << ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_S )))
+                                             >> ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P0_W ));
+   int32_t paramP1 = (((int32_t)( fitParams  << ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_S )))
+                                             >> ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P1_W ));
+   int32_t paramP2 = (((int32_t)( fitParams  << ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_W - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_S )))
+                                             >> ( 32 - FCFG1_FREQ_OFFSET_HPOSC_COMP_P2_W ));
+
+   uint32_t fitParP3  = HWREG( FCFG1_BASE + FCFG1_O_MISC_CONF_2 );
+   // Extract the P3 param, and sign extend via shifting up/down
+   int32_t paramP3 = (((int32_t)( fitParP3   << ( 32 - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_W - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_S )))
+                                             >> ( 32 - FCFG1_MISC_CONF_2_HPOSC_COMP_P3_W ));
 
    // Now we can find the HPOSC freq offset, given as a signed variable d, expressed by:
    //
@@ -404,7 +426,6 @@ OSCHF_DebugGetCrystalAmplitude( void )
    uint32_t deltaTime      ;
    uint32_t ampValue       ;
 
-   //
    // The specified method is as follows:
    // 1. Set minimum interval between oscillator amplitude calibrations.
    //    (Done by setting PER_M=0 and PER_E=1)
@@ -413,7 +434,6 @@ OSCHF_DebugGetCrystalAmplitude( void )
    // 3. Read out the crystal amplitude value from the peek detector.
    // 4. Restore original oscillator amplitude calibrations interval.
    // 5. Return crystal amplitude value converted to millivolt.
-   //
    oscCfgRegCopy = HWREG( AON_WUC_BASE + AON_WUC_O_OSCCFG );
    HWREG( AON_WUC_BASE + AON_WUC_O_OSCCFG ) = ( 1 << AON_WUC_OSCCFG_PER_E_S );
    startTime = AONRTCCurrentCompareValueGet();

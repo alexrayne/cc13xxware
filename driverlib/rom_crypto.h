@@ -1,12 +1,12 @@
 /******************************************************************************
 *  Filename:       rom_crypto.h
-*  Revised:        2015-07-16 12:12:04 +0200 (Thu, 16 Jul 2015)
-*  Revision:       44151
+*  Revised:        2018-09-17 09:24:56 +0200 (Mon, 17 Sep 2018)
+*  Revision:       52624
 *
-*  Description:    This header file is the API to the AES, ECC and SHA256
-*                  functions built into ROM on the CC26xx.
+*  Description:    This header file is the API to the crypto functions
+*                  built into ROM on the CC13xx/CC26xx.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -323,7 +323,7 @@ typedef struct
 
 //*****************************************************************************
 /*!
- * \brief Perform SHA256 on the the input data.
+ * \brief Perform SHA256 on the input data.
  *
  * The input and output buffer can point to the same memory.
  * This is the equivalent of calling \ref SHA256_initialize(),

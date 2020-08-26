@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       ccfgread.h
-*  Revised:        2016-06-30 09:21:03 +0200 (Thu, 30 Jun 2016)
-*  Revision:       46799
+*  Revised:        2019-04-09 14:03:09 +0200 (Tue, 09 Apr 2019)
+*  Revision:       55610
 *
 *  Description:    API for reading CCFG.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -61,9 +61,9 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_ccfg.h>
+#include "../inc/hw_types.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_ccfg.h"
 
 //*****************************************************************************
 //

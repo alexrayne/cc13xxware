@@ -1,9 +1,9 @@
 /******************************************************************************
 *  Filename:       hw_ints_h
-*  Revised:        2016-06-21 09:05:39 +0200 (Tue, 21 Jun 2016)
-*  Revision:       46731
+*  Revised:        2017-05-04 21:56:26 +0200 (Thu, 04 May 2017)
+*  Revision:       48904
 *
-* Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+* Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@
 #define INT_SSI1_COMB                   24 // SSI1 combined interrupt
 #define INT_RFC_CPE_0                   25 // Combined Interrupt for CPE
                                            // Generated events
-#define INT_RFC_HW_COMB                 26 // Combined RCF hardware interrupt
+#define INT_RFC_HW_COMB                 26 // Combined RFC hardware interrupt
 #define INT_RFC_CMD_ACK                 27 // RFC Doorbell Command
                                            // Acknowledgement Interrupt
 #define INT_I2S_IRQ                     28 // Interrupt event from I2S

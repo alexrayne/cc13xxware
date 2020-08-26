@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       rf_prop_cmd.h
-*  Revised:        $ $
-*  Revision:       $ $
+*  Revised:        2017-11-10 10:42:47 +0100 (Fri, 10 Nov 2017)
+*  Revision:       18052
 *
-*  Description:    CC13xx API for Proprietary mode commands
+*  Description:    CC13x0 API for Proprietary mode commands
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,16 @@
 #define __PROP_CMD_H
 
 #ifndef __RFC_STRUCT
-#ifdef __GNUC__
-#define __RFC_STRUCT __attribute__ ((aligned (4)))
-#else
 #define __RFC_STRUCT
+#endif
+
+#ifndef __RFC_STRUCT_ATTR
+#if defined(__GNUC__)
+#define __RFC_STRUCT_ATTR __attribute__ ((aligned (4)))
+#elif defined(__TI_ARM__)
+#define __RFC_STRUCT_ATTR __attribute__ ((__packed__,aligned (4)))
+#else
+#define __RFC_STRUCT_ATTR
 #endif
 #endif
 
@@ -54,8 +60,8 @@
 //! @{
 
 #include <stdint.h>
-#include <driverlib/rf_mailbox.h>
-#include <driverlib/rf_common_cmd.h>
+#include "rf_mailbox.h"
+#include "rf_common_cmd.h"
 
 typedef struct __RFC_STRUCT rfc_carrierSense_s rfc_carrierSense_t;
 typedef struct __RFC_STRUCT rfc_CMD_PROP_TX_s rfc_CMD_PROP_TX_t;
@@ -109,7 +115,7 @@ struct __RFC_STRUCT rfc_carrierSense_s {
                                         //!<        1: A trigger in the past is triggered as soon as possible
    } csEndTrigger;                      //!<        Trigger classifier for ending the carrier sense
    ratmr_t csEndTime;                   //!<        Time used together with <code>csEndTrigger</code> for ending the operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -148,7 +154,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_TX_s {
    uint8_t pktLen;                      //!<        Packet length
    uint32_t syncWord;                   //!<        Sync word to transmit
    uint8_t* pPkt;                       //!<        Pointer to packet
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -220,7 +226,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_s {
    ratmr_t endTime;                     //!<        Time used together with <code>endTrigger</code> for ending the operation
    dataQueue_t* pQueue;                 //!<        Pointer to receive queue
    uint8_t* pOutput;                    //!<        Pointer to output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -258,7 +264,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_TX_ADV_s {
       uint8_t bCrcIncHdr:1;             //!< \brief 0: Do not include header in CRC calculation<br>
                                         //!<        1: Include header in CRC calculation
    } pktConf;
-   uint8_t numHdrBits;                  //!<        Number of bits in header (0&ndash;32)
+   uint8_t numHdrBits;                  //!<        Number of bits in header (0--32)
    uint16_t pktLen;                     //!<        Packet length. 0: Unlimited
    struct {
       uint8_t bExtTxTrig:1;             //!< \brief 0: Start packet on a fixed time from the command start trigger<br>
@@ -284,7 +290,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_TX_ADV_s {
                                         //!<        this trigger is observed.
    uint32_t syncWord;                   //!<        Sync word to transmit
    uint8_t* pPkt;                       //!<        Pointer to packet, or TX queue for unlimited length
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -344,9 +350,9 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_s {
    uint16_t maxPktLen;                  //!< \brief Packet length for fixed length, maximum packet length for variable length<br>
                                         //!<        0: Unlimited or unknown length
    struct {
-      uint16_t numHdrBits:6;            //!<        Number of bits in header (0&ndash;32)
-      uint16_t lenPos:5;                //!<        Position of length field in header (0&ndash;31)
-      uint16_t numLenBits:5;            //!<        Number of bits in length field (0&ndash;16)
+      uint16_t numHdrBits:6;            //!<        Number of bits in header (0--32)
+      uint16_t lenPos:5;                //!<        Position of length field in header (0--31)
+      uint16_t numLenBits:5;            //!<        Number of bits in length field (0--16)
    } hdrConf;
    struct {
       uint16_t addrType:1;              //!< \brief 0: Address after header<br>
@@ -370,7 +376,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_s {
    uint8_t* pAddr;                      //!<        Pointer to address list
    dataQueue_t* pQueue;                 //!<        Pointer to receive queue
    uint8_t* pOutput;                    //!<        Pointer to output structure
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -438,7 +444,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_CS_s {
                                         //!<        1: A trigger in the past is triggered as soon as possible
    } csEndTrigger;                      //!<        Trigger classifier for ending the carrier sense
    ratmr_t csEndTime;                   //!<        Time used together with <code>csEndTrigger</code> for ending the operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -475,24 +481,34 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_SETUP_s {
       uint32_t preScale:4;              //!<        Prescaler value
       uint32_t :4;
       uint32_t rateWord:21;             //!<        Rate word
+      uint32_t decimMode:3;             //!< \brief 0: Use automatic PDIF decimation<br>
+                                        //!<        1: Force PDIF decimation to 0<br>
+                                        //!<        3: Force PDIF decimation to 1<br>
+                                        //!<        5: Force PDIF decimation to 2<br>
+                                        //!<        Others: <i>Reserved</i>
    } symbolRate;                        //!<        Symbol rate setting
    uint8_t rxBw;                        //!<        Receiver bandwidth
    struct {
-      uint8_t nPreamBytes:6;            //!< \brief 0&ndash;30: Number of preamble bytes<br>
-                                        //!<        31: 4 preamble bits
+      uint8_t nPreamBytes:6;            //!< \brief 0: 1 preamble bit<br>
+                                        //!<        1--16: Number of preamble bytes<br>
+                                        //!<        18, 20, ..., 30: Number of preamble bytes<br>
+                                        //!<        31: 4 preamble bits<br>
+                                        //!<        32: 32 preamble bytes<br>
+                                        //!<        Others: <i>Reserved</i>
       uint8_t preamMode:2;              //!< \brief 0: Send 0 as the first preamble bit<br>
                                         //!<        1: Send 1 as the first preamble bit<br>
                                         //!<        2: Send same first bit in preamble and sync word<br>
                                         //!<        3: Send different first bit in preamble and sync word
    } preamConf;
    struct {
-      uint16_t nSwBits:6;               //!<        Number of sync word bits (up to 32)
+      uint16_t nSwBits:6;               //!<        Number of sync word bits (8--32)
       uint16_t bBitReversal:1;          //!< \brief 0: Use positive deviation for 1<br>
                                         //!<        1: Use positive deviation for 0
       uint16_t bMsbFirst:1;             //!< \brief 0: Least significant bit transmitted first<br>
                                         //!<        1: Most significant bit transmitted first
       uint16_t fecMode:4;               //!< \brief Select coding<br>
                                         //!<        0: Uncoded binary modulation<br>
+                                        //!<        8: Long range mode<br>
                                         //!<        10: Manchester coded binary modulation<br>
                                         //!<        Others: <i>Reserved</i>
       uint16_t :1;
@@ -527,7 +543,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_SETUP_s {
    uint16_t txPower;                    //!<        Transmit power
    uint32_t* pRegOverride;              //!< \brief Pointer to a list of hardware and configuration registers to override. If NULL, no
                                         //!<        override is used.
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -536,8 +552,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_SETUP_s {
 #define CMD_PROP_RADIO_DIV_SETUP                                0x3807
 //! Proprietary Mode Radio Setup Command for All Frequency Bands
 struct __RFC_STRUCT rfc_CMD_PROP_RADIO_DIV_SETUP_s {
-   uint16_t commandNo;                  //!< \brief Proprietary Mode Radio Setup Command for 2.4 GHz (CC1350 Only)
-                                        //!<        The command ID number 0x3807
+   uint16_t commandNo;                  //!<        The command ID number 0x3807
    uint16_t status;                     //!< \brief An integer telling the status of the command. This value is
                                         //!<        updated by the radio CPU during operation and may be read by the
                                         //!<        system CPU at any time.
@@ -565,24 +580,34 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_DIV_SETUP_s {
       uint32_t preScale:4;              //!<        Prescaler value
       uint32_t :4;
       uint32_t rateWord:21;             //!<        Rate word
+      uint32_t decimMode:3;             //!< \brief 0: Use automatic PDIF decimation<br>
+                                        //!<        1: Force PDIF decimation to 0<br>
+                                        //!<        3: Force PDIF decimation to 1<br>
+                                        //!<        5: Force PDIF decimation to 2<br>
+                                        //!<        Others: <i>Reserved</i>
    } symbolRate;                        //!<        Symbol rate setting
    uint8_t rxBw;                        //!<        Receiver bandwidth
    struct {
-      uint8_t nPreamBytes:6;            //!< \brief 0&ndash;30: Number of preamble bytes<br>
-                                        //!<        31: 4 preamble bits
+      uint8_t nPreamBytes:6;            //!< \brief 0: 1 preamble bit<br>
+                                        //!<        1--16: Number of preamble bytes<br>
+                                        //!<        18, 20, ..., 30: Number of preamble bytes<br>
+                                        //!<        31: 4 preamble bits<br>
+                                        //!<        32: 32 preamble bytes<br>
+                                        //!<        Others: <i>Reserved</i>
       uint8_t preamMode:2;              //!< \brief 0: Send 0 as the first preamble bit<br>
                                         //!<        1: Send 1 as the first preamble bit<br>
                                         //!<        2: Send same first bit in preamble and sync word<br>
                                         //!<        3: Send different first bit in preamble and sync word
    } preamConf;
    struct {
-      uint16_t nSwBits:6;               //!<        Number of sync word bits (up to 32)
+      uint16_t nSwBits:6;               //!<        Number of sync word bits (8--32)
       uint16_t bBitReversal:1;          //!< \brief 0: Use positive deviation for 1<br>
                                         //!<        1: Use positive deviation for 0
       uint16_t bMsbFirst:1;             //!< \brief 0: Least significant bit transmitted first<br>
                                         //!<        1: Most significant bit transmitted first
       uint16_t fecMode:4;               //!< \brief Select coding<br>
                                         //!<        0: Uncoded binary modulation<br>
+                                        //!<        8: Long range mode<br>
                                         //!<        10: Manchester coded binary modulation<br>
                                         //!<        Others: <i>Reserved</i>
       uint16_t :1;
@@ -625,7 +650,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_DIV_SETUP_s {
                                         //!<        intermediate frequency if supported, otherwise 0.<br>
                                         //!<        0x8000: Use default.
    uint8_t loDivider;                   //!<        LO frequency divider setting to use. Supported values: 2 (CC1350 only), 5, 6, 10, 12, 15, and 30
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -634,8 +659,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RADIO_DIV_SETUP_s {
 #define CMD_PROP_RX_SNIFF                                       0x3808
 //! Proprietary Mode Receive Command with Sniff Mode
 struct __RFC_STRUCT rfc_CMD_PROP_RX_SNIFF_s {
-   uint16_t commandNo;                  //!< \brief Proprietary Mode Receive Command
-                                        //!<        The command ID number 0x3808
+   uint16_t commandNo;                  //!<        The command ID number 0x3808
    uint16_t status;                     //!< \brief An integer telling the status of the command. This value is
                                         //!<        updated by the radio CPU during operation and may be read by the
                                         //!<        system CPU at any time.
@@ -732,7 +756,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_SNIFF_s {
                                         //!<        1: A trigger in the past is triggered as soon as possible
    } csEndTrigger;                      //!<        Trigger classifier for ending the carrier sense
    ratmr_t csEndTime;                   //!<        Time used together with <code>csEndTrigger</code> for ending the operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -741,8 +765,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_SNIFF_s {
 #define CMD_PROP_RX_ADV_SNIFF                                   0x3809
 //! Proprietary Mode Advanced Receive Command with Sniff Mode
 struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_SNIFF_s {
-   uint16_t commandNo;                  //!< \brief Proprietary Mode Advanced Receive Command
-                                        //!<        The command ID number 0x3809
+   uint16_t commandNo;                  //!<        The command ID number 0x3809
    uint16_t status;                     //!< \brief An integer telling the status of the command. This value is
                                         //!<        updated by the radio CPU during operation and may be read by the
                                         //!<        system CPU at any time.
@@ -793,9 +816,9 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_SNIFF_s {
    uint16_t maxPktLen;                  //!< \brief Packet length for fixed length, maximum packet length for variable length<br>
                                         //!<        0: Unlimited or unknown length
    struct {
-      uint16_t numHdrBits:6;            //!<        Number of bits in header (0&ndash;32)
-      uint16_t lenPos:5;                //!<        Position of length field in header (0&ndash;31)
-      uint16_t numLenBits:5;            //!<        Number of bits in length field (0&ndash;16)
+      uint16_t numHdrBits:6;            //!<        Number of bits in header (0--32)
+      uint16_t lenPos:5;                //!<        Position of length field in header (0--31)
+      uint16_t numLenBits:5;            //!<        Number of bits in length field (0--16)
    } hdrConf;
    struct {
       uint16_t addrType:1;              //!< \brief 0: Address after header<br>
@@ -853,7 +876,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_SNIFF_s {
                                         //!<        1: A trigger in the past is triggered as soon as possible
    } csEndTrigger;                      //!<        Trigger classifier for ending the carrier sense
    ratmr_t csEndTime;                   //!<        Time used together with <code>csEndTrigger</code> for ending the operation
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -864,7 +887,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_RX_ADV_SNIFF_s {
 struct __RFC_STRUCT rfc_CMD_PROP_SET_LEN_s {
    uint16_t commandNo;                  //!<        The command ID number 0x3401
    uint16_t rxLen;                      //!<        Payload length to use
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -874,7 +897,7 @@ struct __RFC_STRUCT rfc_CMD_PROP_SET_LEN_s {
 //! Restart Packet  Command
 struct __RFC_STRUCT rfc_CMD_PROP_RESTART_RX_s {
    uint16_t commandNo;                  //!<        The command ID number 0x3402
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -890,7 +913,7 @@ struct __RFC_STRUCT rfc_propRxOutput_s {
    uint8_t nRxBufFull;                  //!<        Number of packets that have been received and discarded due to lack of buffer space
    int8_t lastRssi;                     //!<        RSSI of last received packet
    ratmr_t timeStamp;                   //!<        Time stamp of last received packet
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 
@@ -907,7 +930,7 @@ struct __RFC_STRUCT rfc_propRxStatus_s {
                                         //!<        2: Packet received correctly, but can be ignored<br>
                                         //!<        3: Packet reception was aborted
    } status;
-};
+} __RFC_STRUCT_ATTR;
 
 //! @}
 

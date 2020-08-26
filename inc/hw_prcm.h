@@ -1,9 +1,9 @@
 /******************************************************************************
 *  Filename:       hw_prcm_h
-*  Revised:        2016-05-20 20:32:53 +0200 (Fri, 20 May 2016)
-*  Revision:       46429
+*  Revised:        2017-09-14 10:33:07 +0200 (Thu, 14 Sep 2017)
+*  Revision:       49733
 *
-* Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+* Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@
 // MCU Voltage Domain Control
 #define PRCM_O_VDCTL                                                0x0000000C
 
-// Clock Load Control
+// Load PRCM Settings To CLKCTRL Power Domain
 #define PRCM_O_CLKLOADCTL                                           0x00000028
 
 // RFC Clock Gate
@@ -181,32 +181,38 @@
 // Power Domain Control
 #define PRCM_O_PDCTL1                                               0x0000017C
 
-// CPU Power Domain Control
+// CPU Power Domain Direct Control
 #define PRCM_O_PDCTL1CPU                                            0x00000184
 
-// RFC Power Domain Control
+// RFC Power Domain Direct Control
 #define PRCM_O_PDCTL1RFC                                            0x00000188
 
-// VIMS Power Domain Control
+// VIMS Mode Direct Control
 #define PRCM_O_PDCTL1VIMS                                           0x0000018C
 
-// Power Domain Status
+// Power Manager Status
 #define PRCM_O_PDSTAT1                                              0x00000194
 
-// BUS Power Domain Status
+// BUS Power Domain Direct Read Status
 #define PRCM_O_PDSTAT1BUS                                           0x00000198
 
-// RFC Power Domain Status
+// RFC Power Domain Direct Read Status
 #define PRCM_O_PDSTAT1RFC                                           0x0000019C
 
-// CPU Power Domain Status
+// CPU Power Domain Direct Read Status
 #define PRCM_O_PDSTAT1CPU                                           0x000001A0
 
-// VIMS Power Domain Status
+// VIMS Mode Direct Read Status
 #define PRCM_O_PDSTAT1VIMS                                          0x000001A4
+
+// Control To RFC
+#define PRCM_O_RFCBITS                                              0x000001CC
 
 // Selected RFC Mode
 #define PRCM_O_RFCMODESEL                                           0x000001D0
+
+// Allowed RFC Modes
+#define PRCM_O_RFCMODEHWOPT                                         0x000001D4
 
 // Power Profiler Register
 #define PRCM_O_PWRPROFSTAT                                          0x000001E0
@@ -420,8 +426,9 @@
 //*****************************************************************************
 // Field:   [1:0] CLK_EN
 //
+//
 // 00: Disable clock
-// 01: Disable clock when SYSBUS clock is disabled
+// 01: Disable clock when system CPU is in DeepSleep
 // 11: Enable clock
 //
 // For changes to take effect, CLKLOADCTL.LOAD needs to be written
@@ -1010,7 +1017,7 @@
 // Field:     [0] EN
 //
 //
-// 0: MCLK, BCLK and **WCLK** will be static low
+// 0: MCLK, BCLK and WCLK will be static low
 // 1: Enables the generation of  MCLK, BCLK and WCLK
 //
 // For changes to take effect, CLKLOADCTL.LOAD needs to be written
@@ -1498,13 +1505,30 @@
 
 //*****************************************************************************
 //
+// Register: PRCM_O_RFCBITS
+//
+//*****************************************************************************
+// Field:  [31:0] READ
+//
+// Control bits for RFC. The RF core CPE processor will automatically check
+// this register when it boots, and it can be used to immediately instruct CPE
+// to perform some tasks at its start-up. The supported functionality is
+// ROM-defined and may vary. See the technical reference manual for more
+// details.
+#define PRCM_RFCBITS_READ_W                                                 32
+#define PRCM_RFCBITS_READ_M                                         0xFFFFFFFF
+#define PRCM_RFCBITS_READ_S                                                  0
+
+//*****************************************************************************
+//
 // Register: PRCM_O_RFCMODESEL
 //
 //*****************************************************************************
 // Field:   [2:0] CURR
 //
-// Written by MCU - Outputs to RFC. Only modes permitted by RFCMODEHWOPT.AVAIL
-// are writeable.
+// Selects the set of commands that the RFC will accept. Only modes permitted
+// by RFCMODEHWOPT.AVAIL are writeable. See the technical reference manual for
+// details.
 // ENUMs:
 // MODE7                    Select Mode 7
 // MODE6                    Select Mode 6
@@ -1525,6 +1549,35 @@
 #define PRCM_RFCMODESEL_CURR_MODE2                                  0x00000002
 #define PRCM_RFCMODESEL_CURR_MODE1                                  0x00000001
 #define PRCM_RFCMODESEL_CURR_MODE0                                  0x00000000
+
+//*****************************************************************************
+//
+// Register: PRCM_O_RFCMODEHWOPT
+//
+//*****************************************************************************
+// Field:   [7:0] AVAIL
+//
+// Permitted RFC modes. More than one mode can be permitted.
+// ENUMs:
+// MODE7                    Mode 7 permitted
+// MODE6                    Mode 6 permitted
+// MODE5                    Mode 5 permitted
+// MODE4                    Mode 4 permitted
+// MODE3                    Mode 3 permitted
+// MODE2                    Mode 2 permitted
+// MODE1                    Mode 1 permitted
+// MODE0                    Mode 0 permitted
+#define PRCM_RFCMODEHWOPT_AVAIL_W                                            8
+#define PRCM_RFCMODEHWOPT_AVAIL_M                                   0x000000FF
+#define PRCM_RFCMODEHWOPT_AVAIL_S                                            0
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE7                               0x00000080
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE6                               0x00000040
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE5                               0x00000020
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE4                               0x00000010
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE3                               0x00000008
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE2                               0x00000004
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE1                               0x00000002
+#define PRCM_RFCMODEHWOPT_AVAIL_MODE0                               0x00000001
 
 //*****************************************************************************
 //
@@ -1550,6 +1603,8 @@
 //
 // 0: Retention for RFC SRAM disabled
 // 1: Retention for RFC SRAM enabled
+//
+// Memories controlled: CPERAM  MCERAM  RFERAM
 #define PRCM_RAMRETEN_RFC                                           0x00000004
 #define PRCM_RAMRETEN_RFC_BITN                                               2
 #define PRCM_RAMRETEN_RFC_M                                         0x00000004

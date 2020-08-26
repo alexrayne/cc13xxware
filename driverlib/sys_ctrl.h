@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       sys_ctrl.h
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2018-09-17 14:58:51 +0200 (Mon, 17 Sep 2018)
+*  Revision:       52634
 *
 *  Description:    Defines and prototypes for the System Controller.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -61,33 +61,33 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_ints.h>
-#include <inc/hw_sysctl.h>
-#include <inc/hw_prcm.h>
-#include <inc/hw_nvic.h>
-#include <inc/hw_aon_wuc.h>
-#include <inc/hw_aux_wuc.h>
-#include <inc/hw_aon_ioc.h>
-#include <inc/hw_ddi_0_osc.h>
-#include <inc/hw_rfc_pwr.h>
-#include <inc/hw_prcm.h>
-#include <inc/hw_adi_3_refsys.h>
-#include <inc/hw_aon_sysctl.h>
-#include <inc/hw_aon_rtc.h>
-#include <inc/hw_fcfg1.h>
-#include <driverlib/interrupt.h>
-#include <driverlib/debug.h>
-#include <driverlib/pwr_ctrl.h>
-#include <driverlib/osc.h>
-#include <driverlib/prcm.h>
-#include <driverlib/aux_wuc.h>
-#include <driverlib/aon_wuc.h>
-#include <driverlib/adi.h>
-#include <driverlib/ddi.h>
-#include <driverlib/cpu.h>
-#include <driverlib/vims.h>
+#include "../inc/hw_types.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_ints.h"
+#include "../inc/hw_sysctl.h"
+#include "../inc/hw_prcm.h"
+#include "../inc/hw_nvic.h"
+#include "../inc/hw_aon_wuc.h"
+#include "../inc/hw_aux_wuc.h"
+#include "../inc/hw_aon_ioc.h"
+#include "../inc/hw_ddi_0_osc.h"
+#include "../inc/hw_rfc_pwr.h"
+#include "../inc/hw_prcm.h"
+#include "../inc/hw_adi_3_refsys.h"
+#include "../inc/hw_aon_sysctl.h"
+#include "../inc/hw_aon_rtc.h"
+#include "../inc/hw_fcfg1.h"
+#include "interrupt.h"
+#include "debug.h"
+#include "pwr_ctrl.h"
+#include "osc.h"
+#include "prcm.h"
+#include "aux_wuc.h"
+#include "aon_wuc.h"
+#include "adi.h"
+#include "ddi.h"
+#include "cpu.h"
+#include "vims.h"
 
 //*****************************************************************************
 //
@@ -103,7 +103,6 @@ extern "C"
 //
 //*****************************************************************************
 #if !defined(DOXYGEN)
-    #define SysCtrlPowerEverything          NOROM_SysCtrlPowerEverything
     #define SysCtrlSetRechargeBeforePowerDown NOROM_SysCtrlSetRechargeBeforePowerDown
     #define SysCtrlAdjustRechargeAfterPowerDown NOROM_SysCtrlAdjustRechargeAfterPowerDown
     #define SysCtrl_DCDC_VoltageConditionalControl NOROM_SysCtrl_DCDC_VoltageConditionalControl
@@ -143,22 +142,6 @@ extern "C"
 
 //*****************************************************************************
 //
-//! \brief Power up everything.
-//!
-//! \note The sequencing in this function is not necessarily how you would
-//! want to sequence active mode in a real application. There might be
-//! application specific prerequisites or hardware restrictions you would want
-//! to consider which deviate from this specific implementation.
-//!
-//! \note This function might be deprecated in future releases
-//!
-//! \return None
-//
-//*****************************************************************************
-extern void SysCtrlPowerEverything(void);
-
-//*****************************************************************************
-//
 //! \brief Get the CPU core clock frequency.
 //!
 //! Use this function to get the current clock frequency for the CPU.
@@ -172,9 +155,7 @@ extern void SysCtrlPowerEverything(void);
 __STATIC_INLINE uint32_t
 SysCtrlClockGet( void )
 {
-    //
     // Return fixed clock speed
-    //
     return( GET_MCU_CLOCK );
 }
 
@@ -195,9 +176,7 @@ SysCtrlClockGet( void )
 __STATIC_INLINE void
 SysCtrlAonSync(void)
 {
-    //
     // Sync the AON interface
-    //
     HWREG(AON_RTC_BASE + AON_RTC_O_SYNC);
 }
 
@@ -222,14 +201,11 @@ SysCtrlAonSync(void)
 __STATIC_INLINE void
 SysCtrlAonUpdate(void)
 {
-    //
     // Force a clock cycle on the AON interface to guarantee all registers are
     // in sync.
-    //
     HWREG(AON_RTC_BASE + AON_RTC_O_SYNC) = 1;
     HWREG(AON_RTC_BASE + AON_RTC_O_SYNC);
 }
-
 
 //*****************************************************************************
 //
@@ -256,7 +232,6 @@ SysCtrlAonUpdate(void)
 //*****************************************************************************
 extern void SysCtrlSetRechargeBeforePowerDown( uint32_t xoscPowerMode );
 
-
 //*****************************************************************************
 //
 //! \brief Adjust Recharge calculations to be used next.
@@ -268,6 +243,9 @@ extern void SysCtrlSetRechargeBeforePowerDown( uint32_t xoscPowerMode );
 //! optimal recharge controller settings next time (When
 //! \ref SysCtrlSetRechargeBeforePowerDown() is called next time).
 //!
+//! \param vddrRechargeMargin margin in SCLK_LF periods to subtract from
+//! previous longest recharge period experienced while in standby.
+//!
 //! \note
 //! Special care must be taken to make sure that the AON registers read are
 //! updated after the wakeup. Writing to an AON register and then calling
@@ -276,8 +254,7 @@ extern void SysCtrlSetRechargeBeforePowerDown( uint32_t xoscPowerMode );
 //! \return None
 //
 //*****************************************************************************
-extern void SysCtrlAdjustRechargeAfterPowerDown( void );
-
+extern void SysCtrlAdjustRechargeAfterPowerDown( uint32_t vddrRechargeMargin );
 
 //*****************************************************************************
 //
@@ -296,27 +273,37 @@ extern void SysCtrlAdjustRechargeAfterPowerDown( void );
 //*****************************************************************************
 extern void SysCtrl_DCDC_VoltageConditionalControl( void );
 
-
 //*****************************************************************************
 // \name Return values from calling SysCtrlResetSourceGet()
 //@{
 //*****************************************************************************
-#define RSTSRC_PWR_ON               (( AON_SYSCTL_RESETCTL_RESET_SRC_PWR_ON    ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_PIN_RESET            (( AON_SYSCTL_RESETCTL_RESET_SRC_PIN_RESET ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_VDDS_LOSS            (( AON_SYSCTL_RESETCTL_RESET_SRC_VDDS_LOSS ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_VDD_LOSS             (( AON_SYSCTL_RESETCTL_RESET_SRC_VDD_LOSS  ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_VDDR_LOSS            (( AON_SYSCTL_RESETCTL_RESET_SRC_VDDR_LOSS ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_CLK_LOSS             (( AON_SYSCTL_RESETCTL_RESET_SRC_CLK_LOSS  ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_SYSRESET             (( AON_SYSCTL_RESETCTL_RESET_SRC_SYSRESET  ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_WARMRESET            (( AON_SYSCTL_RESETCTL_RESET_SRC_WARMRESET ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
-#define RSTSRC_WAKEUP_FROM_SHUTDOWN ((( AON_SYSCTL_RESETCTL_RESET_SRC_M        ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S )) + 1 )
+#define RSTSRC_PWR_ON                 (( AON_SYSCTL_RESETCTL_RESET_SRC_PWR_ON    ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_PIN_RESET              (( AON_SYSCTL_RESETCTL_RESET_SRC_PIN_RESET ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_VDDS_LOSS              (( AON_SYSCTL_RESETCTL_RESET_SRC_VDDS_LOSS ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_VDDR_LOSS              (( AON_SYSCTL_RESETCTL_RESET_SRC_VDDR_LOSS ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_CLK_LOSS               (( AON_SYSCTL_RESETCTL_RESET_SRC_CLK_LOSS  ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_SYSRESET               (( AON_SYSCTL_RESETCTL_RESET_SRC_SYSRESET  ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_WARMRESET              (( AON_SYSCTL_RESETCTL_RESET_SRC_WARMRESET ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S ))
+#define RSTSRC_WAKEUP_FROM_SHUTDOWN  ((( AON_SYSCTL_RESETCTL_RESET_SRC_M         ) >> ( AON_SYSCTL_RESETCTL_RESET_SRC_S )) + 1 )
 //@}
 
 //*****************************************************************************
 //
-//! \brief Returns last reset source (including "wakeup from shutdown").
+//! \brief Returns the reset source (including "wakeup from shutdown").
 //!
-//! \return Returns one of the RSTSRC_ defines.
+//! In case of \ref RSTSRC_WAKEUP_FROM_SHUTDOWN the application is
+//! responsible for unlatching the outputs (disable pad sleep).
+//! See \ref PowerCtrlPadSleepDisable() for more information.
+//!
+//! \return Returns the reset source.
+//! - \ref RSTSRC_PWR_ON
+//! - \ref RSTSRC_PIN_RESET
+//! - \ref RSTSRC_VDDS_LOSS
+//! - \ref RSTSRC_VDDR_LOSS
+//! - \ref RSTSRC_CLK_LOSS
+//! - \ref RSTSRC_SYSRESET
+//! - \ref RSTSRC_WARMRESET
+//! - \ref RSTSRC_WAKEUP_FROM_SHUTDOWN
 //
 //*****************************************************************************
 extern uint32_t SysCtrlResetSourceGet( void );
@@ -361,9 +348,7 @@ SysCtrlSystemReset( void )
 __STATIC_INLINE void
 SysCtrlClockLossResetEnable(void)
 {
-    //
     // Set clock loss enable bit in AON_SYSCTRL using bit banding
-    //
     HWREGBITW(AON_SYSCTL_BASE + AON_SYSCTL_O_RESETCTL, AON_SYSCTL_RESETCTL_CLK_LOSS_EN_BITN) = 1;
 }
 
@@ -383,9 +368,7 @@ SysCtrlClockLossResetEnable(void)
 __STATIC_INLINE void
 SysCtrlClockLossResetDisable(void)
 {
-    //
     // Clear clock loss enable bit in AON_SYSCTRL using bit banding
-    //
     HWREGBITW(AON_SYSCTL_BASE + AON_SYSCTL_O_RESETCTL, AON_SYSCTL_RESETCTL_CLK_LOSS_EN_BITN) = 0;
 }
 
@@ -396,11 +379,7 @@ SysCtrlClockLossResetDisable(void)
 //
 //*****************************************************************************
 #if !defined(DRIVERLIB_NOROM) && !defined(DOXYGEN)
-    #include <driverlib/rom.h>
-    #ifdef ROM_SysCtrlPowerEverything
-        #undef  SysCtrlPowerEverything
-        #define SysCtrlPowerEverything          ROM_SysCtrlPowerEverything
-    #endif
+    #include "../driverlib/rom.h"
     #ifdef ROM_SysCtrlSetRechargeBeforePowerDown
         #undef  SysCtrlSetRechargeBeforePowerDown
         #define SysCtrlSetRechargeBeforePowerDown ROM_SysCtrlSetRechargeBeforePowerDown

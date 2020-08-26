@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       ddi.h
-*  Revised:        2016-06-30 09:21:03 +0200 (Thu, 30 Jun 2016)
-*  Revision:       46799
+*  Revised:        2018-06-04 16:10:13 +0200 (Mon, 04 Jun 2018)
+*  Revision:       52111
 *
 *  Description:    Defines and prototypes for the DDI master interface.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -61,12 +61,12 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <inc/hw_types.h>
-#include <inc/hw_memmap.h>
-#include <inc/hw_ddi.h>
-#include <inc/hw_aux_smph.h>
-#include <driverlib/debug.h>
-#include <driverlib/cpu.h>
+#include "../inc/hw_types.h"
+#include "../inc/hw_memmap.h"
+#include "../inc/hw_ddi.h"
+#include "../inc/hw_aux_smph.h"
+#include "debug.h"
+#include "cpu.h"
 
 //*****************************************************************************
 //
@@ -230,15 +230,11 @@ DDIBaseValid(uint32_t ui32Base)
 __STATIC_INLINE uint32_t
 DDI32RegRead(uint32_t ui32Base, uint32_t ui32Reg)
 {
-    //
     // Check the arguments.
-    //
     ASSERT(DDIBaseValid(ui32Base));
     ASSERT(ui32Reg < DDI_SLAVE_REGS);
 
-    //
     // Read the register and return the value.
-    //
     return AuxAdiDdiSafeRead(ui32Base + ui32Reg, 4);
 }
 
@@ -269,21 +265,15 @@ DDI32BitsSet(uint32_t ui32Base, uint32_t ui32Reg, uint32_t ui32Val)
 {
     uint32_t ui32RegOffset;
 
-    //
     // Check the arguments.
-    //
     ASSERT(DDIBaseValid(ui32Base));
     ASSERT(ui32Reg < DDI_SLAVE_REGS);
 
-    //
     // Get the correct address of the first register used for setting bits
     // in the DDI slave.
-    //
     ui32RegOffset = DDI_O_SET;
 
-    //
     // Set the selected bits.
-    //
     AuxAdiDdiSafeWrite(ui32Base + ui32RegOffset + ui32Reg, ui32Val, 4);
 }
 
@@ -310,21 +300,15 @@ DDI32BitsClear(uint32_t ui32Base, uint32_t ui32Reg,
 {
     uint32_t ui32RegOffset;
 
-    //
     // Check the arguments.
-    //
     ASSERT(DDIBaseValid(ui32Base));
     ASSERT(ui32Reg < DDI_SLAVE_REGS);
 
-    //
     // Get the correct address of the first register used for setting bits
     // in the DDI slave.
-    //
     ui32RegOffset = DDI_O_CLR;
 
-    //
     // Clear the selected bits.
-    //
     AuxAdiDdiSafeWrite(ui32Base + ui32RegOffset + ui32Reg, ui32Val, 4);
 }
 
@@ -335,7 +319,7 @@ DDI32BitsClear(uint32_t ui32Base, uint32_t ui32Reg,
 //! This function allows byte (8 bit access) to the DDI slave registers.
 //!
 //! Use this function to write any value in the range 0-7 bits aligned on a
-//! byte boundary. Fx. for writing the value 0b101 to bits 1-3 set
+//! byte boundary. For example, for writing the value 0b101 to bits 1-3 set
 //! <tt>ui16Val = 0x0A</tt> and <tt>ui16Mask = 0x0E</tt>. Bits 0 and 5-7 will
 //! not be affected by the operation, as long as the corresponding bits are
 //! not set in the \c ui16Mask.
@@ -361,23 +345,17 @@ DDI8SetValBit(uint32_t ui32Base, uint32_t ui32Reg, uint32_t ui32Byte,
 {
     uint32_t ui32RegOffset;
 
-    //
     // Check the arguments.
-    //
     ASSERT(DDIBaseValid(ui32Base));
     ASSERT(ui32Reg < DDI_SLAVE_REGS);
     ASSERT(!(ui16Val & 0xFF00));
     ASSERT(!(ui16Mask & 0xFF00));
 
-    //
     // Get the correct address of the first register used for setting bits
     // in the DDI slave.
-    //
     ui32RegOffset = DDI_O_MASK8B + (ui32Reg << 1) + (ui32Byte << 1);
 
-    //
     // Set the selected bits.
-    //
     AuxAdiDdiSafeWrite(ui32Base + ui32RegOffset, (ui16Mask << 8) | ui16Val, 2);
 }
 
@@ -389,7 +367,7 @@ DDI8SetValBit(uint32_t ui32Base, uint32_t ui32Reg, uint32_t ui32Byte,
 //! This function allows 16 bit masked access to the DDI slave registers.
 //!
 //! Use this function to write any value in the range 0-15 bits aligned on a
-//! half-word boundary. Fx. for writing the value 0b101 to bits 1-3 set
+//! half-word boundary. For example, for writing the value 0b101 to bits 1-3 set
 //! <tt>ui32Val = 0x000A</tt> and <tt>ui32Mask = 0x000E</tt>. Bits 0 and 5-15 will not be
 //! affected by the operation, as long as the corresponding bits are not set
 //! in the \c ui32Mask.
@@ -414,23 +392,17 @@ DDI16SetValBit(uint32_t ui32Base, uint32_t ui32Reg, bool bWriteHigh,
 {
     uint32_t ui32RegOffset;
 
-    //
     // Check the arguments.
-    //
     ASSERT(DDIBaseValid(ui32Base));
     ASSERT(ui32Reg < DDI_SLAVE_REGS);
     ASSERT(!(ui32Val & 0xFFFF0000));
     ASSERT(!(ui32Mask & 0xFFFF0000));
 
-    //
     // Get the correct address of the first register used for setting bits
     // in the DDI slave.
-    //
     ui32RegOffset = DDI_O_MASK16B + (ui32Reg << 1) + (bWriteHigh ? 4 : 0);
 
-    //
     // Set the selected bits.
-    //
     AuxAdiDdiSafeWrite(ui32Base + ui32RegOffset, (ui32Mask << 16) | ui32Val, 4);
 }
 
@@ -468,10 +440,8 @@ extern void DDI32RegWrite(uint32_t ui32Base, uint32_t ui32Reg, uint32_t ui32Val)
 //!
 //! \param ui32Base is the base address of the DDI port.
 //! \param ui32Reg is register to access.
-//! \param ui32Mask is the mask defining which of the 16 bit that should be
-//! overwritten. The mask must be defined in the lower half of the 32 bits.
-//! \param ui32WrData is the value to write. The value must be defined in the lower
-//! half of the 32 bits.
+//! \param ui32Mask is the mask defining which of the 16 bit that should be overwritten.
+//! \param ui32WrData is the value to write. The value must be defined in the lower half of the 32 bits.
 //!
 //! \return None
 //
@@ -484,17 +454,16 @@ extern void DDI16BitWrite(uint32_t ui32Base, uint32_t ui32Reg,
 //
 //! \brief Write a bit field via the DDI using 16-bit maskable write.
 //!
-//! Requires that bitfields not space the low/high word boundary.
+//! Requires that entire bit field is within the half word boundary.
 //!
 //! \note Both the AUX module and the clock for the AUX SMPH module must be
 //! enabled before calling this function.
 //!
 //! \param ui32Base is the base address of the DDI port.
 //! \param ui32Reg is register to access.
-//! \param ui32Mask is the mask defining which of the 16 bits that should be
-//! overwritten. The mask must be defined in the lower half of the 32 bits.
-//! \param ui32Shift
-//! \param ui32Data
+//! \param ui32Mask is the mask defining which of the 16 bits that should be overwritten.
+//! \param ui32Shift is the shift value for the bit field.
+//! \param ui32Data is the data aligned to bit 0.
 //!
 //! \return None
 //
@@ -522,17 +491,16 @@ extern uint16_t DDI16BitRead(uint32_t ui32Base, uint32_t ui32Reg,
 
 //*****************************************************************************
 //
-//! \brief Read a bitfield via the DDI using 16-bit read.
+//! \brief Read a bit field via the DDI using 16-bit read.
 //!
-//! Requires that bit fields do not space the low/high word boundary.
+//! Requires that entire bit field is within the half word boundary.
 //!
 //! \note Both the AUX module and the clock for the AUX SMPH module must be
 //! enabled before calling this function.
 //!
 //! \param ui32Base is the base address of the DDI port.
 //! \param ui32Reg is register to access.
-//! \param ui32Mask is the mask defining which of the 16 bits that should be
-//! overwritten. The mask must be defined in the lower half of the 32 bits.
+//! \param ui32Mask is the mask defining which of the 16 bits that should be overwritten.
 //! \param ui32Shift defines the required shift of the data to align with bit 0.
 //!
 //! \return Returns data aligned to bit 0.
@@ -548,7 +516,7 @@ extern uint16_t DDI16BitfieldRead(uint32_t ui32Base, uint32_t ui32Reg,
 //
 //*****************************************************************************
 #if !defined(DRIVERLIB_NOROM) && !defined(DOXYGEN)
-    #include <driverlib/rom.h>
+    #include "../driverlib/rom.h"
     #ifdef ROM_DDI32RegWrite
         #undef  DDI32RegWrite
         #define DDI32RegWrite                   ROM_DDI32RegWrite

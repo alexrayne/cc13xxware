@@ -1,11 +1,11 @@
 /******************************************************************************
 *  Filename:       aux_wuc.c
-*  Revised:        2016-07-07 19:12:02 +0200 (Thu, 07 Jul 2016)
-*  Revision:       46848
+*  Revised:        2017-06-05 12:13:49 +0200 (Mon, 05 Jun 2017)
+*  Revision:       49096
 *
 *  Description:    Driver for the AUX Wakeup Controller.
 *
-*  Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+*  Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 *
 ******************************************************************************/
 
-#include <driverlib/aux_wuc.h>
+#include "aux_wuc.h"
 
 //*****************************************************************************
 //
@@ -63,9 +63,7 @@
 void
 AUXWUCClockEnable(uint32_t ui32Clocks)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Clocks & AUX_WUC_ADI_CLOCK) ||
            (ui32Clocks & AUX_WUC_OSCCTRL_CLOCK) ||
            (ui32Clocks & AUX_WUC_TDCIF_CLOCK) ||
@@ -78,15 +76,11 @@ AUXWUCClockEnable(uint32_t ui32Clocks)
            (ui32Clocks & AUX_WUC_ADC_CLOCK) ||
            (ui32Clocks & AUX_WUC_REF_CLOCK));
 
-    //
     // Enable some of the clocks in the clock register.
-    //
     HWREG(AUX_WUC_BASE + AUX_WUC_O_MODCLKEN0) |= (ui32Clocks &
                                                 AUX_WUC_MODCLK_MASK);
 
-    //
     // Check the rest.
-    //
     if(ui32Clocks & AUX_WUC_ADC_CLOCK)
     {
         HWREG(AUX_WUC_BASE + AUX_WUC_O_ADCCLKCTL) =
@@ -112,9 +106,7 @@ AUXWUCClockEnable(uint32_t ui32Clocks)
 void
 AUXWUCClockDisable(uint32_t ui32Clocks)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Clocks & AUX_WUC_ADI_CLOCK) ||
            (ui32Clocks & AUX_WUC_OSCCTRL_CLOCK) ||
            (ui32Clocks & AUX_WUC_TDCIF_CLOCK) ||
@@ -127,15 +119,11 @@ AUXWUCClockDisable(uint32_t ui32Clocks)
            (ui32Clocks & AUX_WUC_ADC_CLOCK) ||
            (ui32Clocks & AUX_WUC_REF_CLOCK));
 
-    //
     // Disable some of the clocks in the clock register.
-    //
     HWREG(AUX_WUC_BASE + AUX_WUC_O_MODCLKEN0) &= ~(ui32Clocks &
             AUX_WUC_MODCLK_MASK);
 
-    //
     // Check the rest.
-    //
     if(ui32Clocks & AUX_WUC_ADC_CLOCK)
     {
         HWREG(AUX_WUC_BASE + AUX_WUC_O_ADCCLKCTL) &=
@@ -164,9 +152,7 @@ AUXWUCClockStatus(uint32_t ui32Clocks)
     bool bClockStatus;
     uint32_t ui32ClockRegister;
 
-    //
     // Check the arguments.
-    //
     ASSERT((ui32Clocks & AUX_WUC_ADI_CLOCK) ||
            (ui32Clocks & AUX_WUC_OSCCTRL_CLOCK) ||
            (ui32Clocks & AUX_WUC_TDCIF_CLOCK) ||
@@ -181,14 +167,10 @@ AUXWUCClockStatus(uint32_t ui32Clocks)
 
     bClockStatus = true;
 
-    //
     // Read the status registers.
-    //
     ui32ClockRegister = HWREG(AUX_WUC_BASE + AUX_WUC_O_MODCLKEN0);
 
-    //
     // Check all requested clocks
-    //
     if(ui32Clocks & AUX_WUC_ADI_CLOCK)
     {
         bClockStatus = bClockStatus && (ui32ClockRegister &
@@ -259,9 +241,7 @@ AUXWUCClockStatus(uint32_t ui32Clocks)
                                         true : false);
     }
 
-    //
     // Return the clock status.
-    //
     return bClockStatus ? AUX_WUC_CLOCK_READY : AUX_WUC_CLOCK_OFF;
 }
 
@@ -273,16 +253,12 @@ AUXWUCClockStatus(uint32_t ui32Clocks)
 void
 AUXWUCPowerCtrl(uint32_t ui32PowerMode)
 {
-    //
     // Check the arguments.
-    //
     ASSERT((ui32PowerMode == AUX_WUC_POWER_OFF) ||
            (ui32PowerMode == AUX_WUC_POWER_DOWN) ||
            (ui32PowerMode == AUX_WUC_POWER_ACTIVE));
 
-    //
     // Power on/off.
-    //
     if(ui32PowerMode == AUX_WUC_POWER_OFF)
     {
         HWREG(AUX_WUC_BASE + AUX_WUC_O_PWROFFREQ) = AUX_WUC_PWROFFREQ_REQ;
@@ -294,13 +270,10 @@ AUXWUCPowerCtrl(uint32_t ui32PowerMode)
         HWREG(AUX_WUC_BASE + AUX_WUC_O_PWROFFREQ) = 0x0;
     }
 
-    //
     // Power down/active.
-    //
     if(ui32PowerMode == AUX_WUC_POWER_DOWN)
     {
-        HWREG(AUX_WUC_BASE + AUX_WUC_O_PWRDWNREQ) =
-            AUX_WUC_PWRDWNREQ_REQ;
+        HWREG(AUX_WUC_BASE + AUX_WUC_O_PWRDWNREQ) = AUX_WUC_PWRDWNREQ_REQ;
         HWREG(AUX_WUC_BASE + AUX_WUC_O_MCUBUSCTL) = AUX_WUC_MCUBUSCTL_DISCONNECT_REQ;
     }
     else

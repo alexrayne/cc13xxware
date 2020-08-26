@@ -1,9 +1,9 @@
 /******************************************************************************
 *  Filename:       hw_gpt_h
-*  Revised:        2016-03-14 09:20:59 +0100 (Mon, 14 Mar 2016)
-*  Revision:       45924
+*  Revised:        2017-01-31 09:37:48 +0100 (Tue, 31 Jan 2017)
+*  Revision:       48345
 *
-* Copyright (c) 2015 - 2016, Texas Instruments Incorporated
+* Copyright (c) 2015 - 2017, Texas Instruments Incorporated
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -477,9 +477,9 @@
 // If the timer is stalled (CTL.TBSTALL is set) when this bit is set, TBMATCHR
 // and TBPR are updated according to the configuration of this bit.
 // ENUMs:
-// TOUPDATE                 Update the TBMATCHR and the TBPR, if used on the
-//                          next time-out.
-// CYCLEUPDATE              Update TBMATCHR and TBPR, if used on the next
+// TOUPDATE                 Update TBMATCHR and TBPR, if used, on the next
+//                          time-out.
+// CYCLEUPDATE              Update TBMATCHR and TBPR, if used, on the next
 //                          cycle.
 #define GPT_TBMR_TBMRSU                                             0x00000400
 #define GPT_TBMR_TBMRSU_BITN                                                10
@@ -523,9 +523,9 @@
 //                          timeout.
 // CYCLEUPDATE              Update the TBR register with the value in the
 //                          TBILR register on the next clock cycle. If the
-//                          prescaler is used, update the TBPS register
+//                          pre-scaler is used, update the TBPS register
 //                          with the value in the TBPR register on the next
-//                          timeout.
+//                          clock cycle.
 #define GPT_TBMR_TBILD                                              0x00000100
 #define GPT_TBMR_TBILD_BITN                                                  8
 #define GPT_TBMR_TBILD_M                                            0x00000100
@@ -582,7 +582,7 @@
 
 // Field:     [4] TBCDIR
 //
-// grep
+// GPT Timer B Count Direction
 // ENUMs:
 // UP                       The timer counts up. When counting up, the timer
 //                          starts from a value of 0x0.
